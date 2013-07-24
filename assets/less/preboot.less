@@ -22,7 +22,7 @@
 @black-90:                 darken(#fff, 90%);
 
 // Brand colors
-@brand-primary:           #092e68;
+@brand-primary:           rgb(127, 255, 0);
 @brand-success:           #5cb85c;
 @brand-warning:           #f0ad4e;
 @brand-danger:            #d9534f;
@@ -30,30 +30,33 @@
 
 // Scaffolding
 @body-background:         @black-90;
-@text-color:              @black-10;
+@text-color:              @black-80;
 
 // Links
-@link-color:              @brand-primary;
-@link-color-hover:        lighten(@link-color, 25%);
+@link-color:              #468607;
+@link-color-hover:        lighten(@link-color, 15%);
 
 // Typography
-@font-family-sans-serif:  "Cabin", "Helvetica Neue", Helvetica, Arial, sans-serif;
-@font-family-serif:       "Poly", Georgia, "Times New Roman", Times, serif;
+@font-family-sans-serif:  "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif:       Georgia, "Times New Roman", Times, serif;
 @font-family-monospace:   Monaco, Menlo, Consolas, "Courier New", monospace;
-@font-family-base:        @font-family-serif;
+@font-family-base:        @font-family-sans-serif;
 
-@font-size-base:          1rem;
-@font-size-medium:        @font-size-base * 1.25;
-@font-size-large:         @font-size-base * 1.618;
-@font-size-larger:        @font-size-base * 2.618;
-@font-size-huge:          @font-size-base * 4.236;
-@font-size-massive:       @font-size-base * 6.854;
-@font-size-small:         @font-size-base * 0.618;
-@font-size-mini:          @font-size-base * 0.382;
+@phi:                     1.61803399;
+@size-base:               1rem;
+@size-mini:               pow(@phi, -2) * @size-base;
+@size-small:              pow(@phi, -1) * @size-base;
+@size-medsmall:           pow(@phi, -0.5) * @size-base;
+@size-medium:             pow(@phi, 0.5) * @size-base;
+@size-large:              pow(@phi, 1) * @size-base;
+@size-larger:             pow(@phi, 2) * @size-base;
+@size-huge:               pow(@phi, 3) * @size-base;
+@size-massive:            pow(@phi, 4) * @size-base;
+@size-epic:               pow(@phi, 5) * @size-base;
 
 @line-height-base:        1.468;
 
-@headings-font-family:    "Iceberg", @font-family-sans-serif;
+@headings-font-family:    @font-family-sans-serif;
 @headings-font-weight:    400;
 
 // Forms
@@ -66,6 +69,7 @@
 @grid-float-breakpoint: 768px;
 
 @article-width: 42rem;
+@sidebar-width: 14rem;
 
 //
 // Grid system

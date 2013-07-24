@@ -2,12 +2,11 @@
 <html lang="en-us">
 	<head>
 		<meta charset="utf-8">
-		<title>$title$ - Noisehack</title>
-		<meta name="author" content="Zach Denton">
+		<title>$title$ | Noisehack</title>
 		<meta name="description" content="$excerpt$">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="canonical" href="http://noisehack.com$url$">
-		<link href='http://fonts.googleapis.com/css?family=Iceberg' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="/css/main.css">
 		$if(math)$
 		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -16,9 +15,21 @@
 	<body>
 		<header role="banner">
 			<h1><a href="/">Noisehack</a></h1>
+			<nav>
+			<ul>
+				<li><a href="/about/">About</a></li>
+				<li><a href="/archives/">Archives</a></li>
+				<li><a href="http://feeds.feedburner.com/noisehack">RSS</a></li>
+				<li><a href="https://twitter.com/noisehack">Twitter</a></li>
+			</ul>
+			</nav>
 		</header>
 
+		<div id="container">
 		$body$
+		$partial("templates/sidebar.html")$
+		$partial("templates/footer.html")$
+		</div>
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="/js/main.js"></script>
