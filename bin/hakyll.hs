@@ -38,13 +38,14 @@ main = hakyllWith config $ do
     match ("pages/**") $ do
         route   $ setRoot `composeRoutes` cleanURL
         compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/page.html" urlContext
-            >>= loadAndApplyTemplate "templates/default.html" urlContext
+            >>= loadAndApplyTemplate "templates/page.html" baseCtx
+            >>= loadAndApplyTemplate "templates/default.html" baseCtx
             >>= relativizeUrls
 
     match "posts/*" $ do
         route $ postRoute `composeRoutes` cleanURL
         compile $ pandocCompiler
+            >>= saveSnapshot "content"
             >>= loadAndApplyTemplate "templates/post.html"    postCtx
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
@@ -57,7 +58,7 @@ main = hakyllWith config $ do
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Archives"            `mappend`
                     constField "excerpt" "All posts by Zach Denton." `mappend`
-                    urlContext
+                    baseCtx
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
@@ -73,7 +74,7 @@ main = hakyllWith config $ do
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Noisehack" `mappend`
                     constField "excerpt" "Noisehack is a blog about audio programming." `mappend`
-                    urlContext
+                    baseCtx
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/index.html" indexCtx
@@ -84,7 +85,7 @@ main = hakyllWith config $ do
     create ["rss.xml"] $ do
         route idRoute
         compile $ do
-            loadAll "posts/*"
+            loadAllSnapshots "posts/*" "content"
                 >>= fmap (take 10) . recentFirst
                 >>= renderAtom feedConfiguration feedCtx
 
@@ -98,20 +99,26 @@ pandocWriterOptions = defaultHakyllWriterOptions { writerHTMLMathMethod = MathJa
 stripIndexLink :: (Item a -> Compiler String)
 stripIndexLink = (fmap (maybe empty (dropFileName . toUrl)) . getRoute . itemIdentifier)
 
-urlContext :: Context String
-urlContext =
+baseCtx :: Context String
+baseCtx =
     field "url" stripIndexLink `mappend`
+    listField "recentposts" postCtx (fmap (take 3) . recentFirst =<< fakePosts) `mappend`
     defaultContext
 
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
-    urlContext
+    baseCtx
 
 feedCtx :: Context String
 feedCtx =
     bodyField "description" `mappend`
     postCtx
+
+fakePosts :: Compiler [Item String] 
+fakePosts = do 
+    identifiers <- getMatches "posts/*" 
+    return [Item identifier "" | identifier <- identifiers] 
 
 postRoute :: Routes
 postRoute = customRoute $ drop 11 . stripTopDir

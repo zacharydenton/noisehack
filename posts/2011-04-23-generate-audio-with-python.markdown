@@ -264,8 +264,8 @@ def write_wavefile(filename, samples, nframes=None, nchannels=2, sampwidth=2, fr
     return filename
 ```
 
-`wavebender`
-------------
+wavebender
+----------
 I have compiled these techniques and a few others into a module 
 called `wavebender`. Here's the current source code (at the time
 of writing), but you can always find the latest

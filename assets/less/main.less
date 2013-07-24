@@ -135,7 +135,8 @@ header {
 
 	ul {
 		list-style: none;
-		padding-left: 0;
+		padding: 0;
+		margin: 0;
 	}
 
 	a {
@@ -157,11 +158,12 @@ article {
 	word-wrap: break-word;
 
 	h1, h2, h3, h4, h5, h6 {
-		margin: @size-base 0 @size-large 0;
+		margin: @size-base 0 @size-base 0;
 	}
 
 	h1:first-child {
 		margin-top: 0;
+		margin-bottom: @size-large;
 		font-weight: bold;
 		font-size: @size-larger;
 	}
@@ -176,13 +178,13 @@ article {
 	}
 
 	hr {
-		margin: 0 -@size-large @size-large;
+		margin: 0 -@size-large @size-base;
 		border: none;
 		border-top: @size-mini solid fade(white, 30%);
 	}
 
 	p {
-		margin: 0 0 @size-large 0;
+		margin: 0 0 @size-base 0;
 	}
 
 	img, iframe {
@@ -202,18 +204,14 @@ article {
 	}
 
 	blockquote {
-		margin: @size-base @size-larger @size-large @size-larger;
-
-		@media(max-width: @article-width) {
-			margin: @size-base @size-large @size-large @size-large;
-		}
+		margin: @size-base @size-large @size-base @size-large;
 	}
 
 	pre {
 		font-size: @size-medsmall;
 		line-height: @size-base;
 		padding: @size-small;
-		margin: 0 0 @size-large 0;
+		margin: 0 0 @size-base 0;
 		word-wrap: normal;
 		white-space: pre;
 		overflow: auto;
