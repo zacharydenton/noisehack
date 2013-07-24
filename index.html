@@ -24,7 +24,22 @@
 		</header>
 
 		<div id="container">
-		 
+		
+<article>
+<h1><a href="./music-server-revisited-streaming-with-sshfs-and-mp3fs/">Music Server Revisited: Streaming with sshfs and mp3fs</a></h1>
+<p>A while back, I wrote about <a href="./build-a-media-server-with-ampache-and-transmission/">streaming music with Ampache</a>. Ampache is a nice piece of software, with some unique advantages (like Android support). However, there are simpler ways to stream music. I’m going to show you how to stream music using sshfs and (optionally) mp3fs. One of the best things about this approach is that it allows you to access your collection with the media player of your choice.</p>
+
+<p><a href="./music-server-revisited-streaming-with-sshfs-and-mp3fs/">Continue reading →</a></p>
+</article>
+
+<article>
+<h1><a href="./generate-audio-with-python/">Generate Audio with Python</a></h1>
+<h2 id="introduction">Introduction</h2>
+<p>I’ve been intrigued by the concept of using computers to generate audio for a long time. It turns out that you can generate audio with nothing but the standard library of Python.</p>
+<p>The approach I used relies heavily on the <code>itertools</code> module. Essentially, I use <code>itertools</code> to create infinite generators and then take some data from these generators to produce the audio. The resultant sequence of floats in the range [-1.0, 1.0] is converted to 16 bit PCM audio (i.e., a sequence of signed 16 bit integers in the range [-32767, 32767]) and then written to a .wav file using the <code>wave</code> module. 
+<p><a href="./generate-audio-with-python/">Continue reading →</a></p>
+</article>
+
 
 		<aside id="sidebar">
 <h2>Subscribe</h2>
@@ -36,7 +51,9 @@
 <h2>Recent</h2>
 <ul>
   
-  <li><a href="./generate-audio-with-python/">Generate Audio with Python</a></li>
+  <li class="post"><a href="./music-server-revisited-streaming-with-sshfs-and-mp3fs/">Music Server Revisited: Streaming with sshfs and mp3fs</a></li>
+  
+  <li class="post"><a href="./generate-audio-with-python/">Generate Audio with Python</a></li>
   
 </ul>
 </aside>
