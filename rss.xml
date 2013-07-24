@@ -15,35 +15,7 @@
     <id>http://noisehack.com/generate-audio-with-python/</id>
     <published>2011-04-23T00:00:00Z</published>
     <updated>2011-04-23T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!doctype html>
-<html lang="en-us">
-	<head>
-		<meta charset="utf-8">
-		<title>Generate Audio with Python</title>
-		<meta name="description" content="An introduction to audio synthesis in Python using itertools.">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="canonical" href="http://noisehack.com/generate-audio-with-python/">
-		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="../css/main.css">
-		
-	</head>
-	<body>
-		<header role="banner">
-			<h1><a href="../">Noisehack</a></h1>
-			<nav>
-			<ul>
-				<li><a href="../about/">About</a></li>
-				<li><a href="../archives/">Archives</a></li>
-				<li><a href="http://feeds.feedburner.com/noisehack">RSS</a></li>
-				<li><a href="https://twitter.com/noisehack">Twitter</a></li>
-			</ul>
-			</nav>
-		</header>
-
-		<div id="container">
-		<article>
-  <h1>Generate Audio with Python</h1>
-  <h2 id="introduction">Introduction</h2>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>I’ve been intrigued by the concept of using computers to generate audio for a long time. It turns out that you can generate audio with nothing but the standard library of Python.</p>
 <p>The approach I used relies heavily on the <code>itertools</code> module. Essentially, I use <code>itertools</code> to create infinite generators and then take some data from these generators to produce the audio. The resultant sequence of floats in the range [-1.0, 1.0] is converted to 16 bit PCM audio (i.e., a sequence of signed 16 bit integers in the range [-32767, 32767]) and then written to a .wav file using the <code>wave</code> module. <!--more--></p>
 <p>If you’re not familiar with iterators and the <code>itertools</code> module, this post may be somewhat hard to follow. <code>itertools</code> really opens up some interesting possibilities in Python, making it more like Lisp or Haskell. In truth, if you’re relying on <code>itertools</code> as much as I am in this post, you might as well just use Lisp or Haskell and receive a nice performance boost. The reason I didn’t is quite simply because I wanted to generate some audio in Python.</p>
@@ -108,14 +80,14 @@ channels = (c1, c2)</code></pre>
 <li><code>nframes</code> - the total number of samples to write. This is equal to the framerate multiplied by the duration of the file in seconds.</li>
 </ul>
 <p>To open a wavefile for writing with the <code>wave</code> module, do this:</p>
-<pre class="sourceCode python"><code class="sourceCode python">w = wave.<span class="dt">open</span>(filename, <span class="st">'w'</span>)
-w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">'NONE'</span>, <span class="st">'not compressed'</span>))</code></pre>
+<pre class="sourceCode python"><code class="sourceCode python">w = wave.<span class="dt">open</span>(filename, <span class="st">&#39;w&#39;</span>)
+w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">&#39;NONE&#39;</span>, <span class="st">&#39;not compressed&#39;</span>))</code></pre>
 <p>The <code>'NONE'</code> and <code>'not compressed'</code> just indicate that we are creating an uncompressed wavefile (nothing else is supported by the <code>wave</code> module at the time of writing).</p>
 <p>Now the wavefile is ready for our audio data. 16 bit audio is encoded as a series of signed 16 bit integers. The first thing to do is to scale our sequence of floats in the range [-1.0, 1.0] to signed 16 bit integers (in the range [-32767, 32767]). For example:</p>
 <pre class="sourceCode python"><code class="sourceCode python">max_amplitude = <span class="fl">32767.0</span>
 samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">for</span> sample in samples)</code></pre>
 <p>We’re writing a binary format, so we need the <code>struct</code> module to convert our audio data to the correct binary encoding. Specifically, we need the <code>struct.pack</code> function. The <code>struct.pack</code> function uses format strings to designate how to pack the data. A signed 16 bit integer is also known as a signed short, so we want to use the format string ‘h’ (the format string for a signed short). Thus, to pack the integer 1000 into a signed short:</p>
-<pre class="sourceCode python"><code class="sourceCode python">struct.pack(<span class="st">'h'</span>, <span class="dv">1000</span>)</code></pre>
+<pre class="sourceCode python"><code class="sourceCode python">struct.pack(<span class="st">&#39;h&#39;</span>, <span class="dv">1000</span>)</code></pre>
 <p>Now, we are going to be creating stereo audio files, so we need to consider how <code>.wav</code> files represent multiple channels. It turns out that <code>.wav</code> files look something like this:</p>
 <pre><code>L1R1L2R2L3R3L4R4</code></pre>
 <p>Where <code>L1</code> is the first sample in the left channel, <code>R1</code> is the first sample in the right channel, and so on. In other words, the channels are interleaved.</p>
@@ -123,7 +95,7 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
 <p>Thus, we take the third approach: buffer chunks of the audio stream and write each chunk as it is computed. This offers the advantages of both techniques.</p>
 <p>So, putting all of this together, we end up with something like this:</p>
 <pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> grouper(n, iterable, fillvalue=<span class="ot">None</span>):
-    <span class="co">&quot;grouper(3, 'ABCDEFG', 'x') --&gt; ABC DEF Gxx&quot;</span>
+    <span class="co">&quot;grouper(3, &#39;ABCDEFG&#39;, &#39;x&#39;) --&gt; ABC DEF Gxx&quot;</span>
     args = [<span class="dt">iter</span>(iterable)] * n
     <span class="kw">return</span> izip_longest(fillvalue=fillvalue, *args)
 
@@ -131,20 +103,20 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
     <span class="kw">if</span> nframes is <span class="ot">None</span>:
         nframes = -<span class="dv">1</span>
 	
-    w = wave.<span class="dt">open</span>(filename, <span class="st">'w'</span>)
-    w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">'NONE'</span>, <span class="st">'not compressed'</span>))
+    w = wave.<span class="dt">open</span>(filename, <span class="st">&#39;w&#39;</span>)
+    w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">&#39;NONE&#39;</span>, <span class="st">&#39;not compressed&#39;</span>))
 
     max_amplitude = <span class="dt">float</span>(<span class="dt">int</span>((<span class="dv">2</span> ** (sampwidth * <span class="dv">8</span>)) / <span class="dv">2</span>) - <span class="dv">1</span>)
 
     <span class="co"># split the samples into chunks (to reduce memory consumption and improve performance)</span>
     <span class="kw">for</span> chunk in grouper(bufsize, samples):
-        frames = <span class="st">''</span>.join(<span class="st">''</span>.join(struct.pack(<span class="st">'h'</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
+        frames = <span class="st">&#39;&#39;</span>.join(<span class="st">&#39;&#39;</span>.join(struct.pack(<span class="st">&#39;h&#39;</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
         w.writeframesraw(frames)
     
     w.close()
 
     <span class="kw">return</span> filename</code></pre>
-<h2 id="wavebender"><code>wavebender</code></h2>
+<h2 id="wavebender">wavebender</h2>
 <p>I have compiled these techniques and a few others into a module called <code>wavebender</code>. Here’s the current source code (at the time of writing), but you can always find the latest at <a href="https://github.com/zacharydenton/wavebender">https://github.com/zacharydenton/wavebender</a>.</p>
 <pre class="sourceCode python"><code class="sourceCode python"><span class="co">#!/usr/bin/env python</span>
 <span class="ch">import</span> sys
@@ -156,14 +128,14 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
 <span class="ch">from</span> itertools <span class="ch">import</span> *
 
 <span class="kw">def</span> grouper(n, iterable, fillvalue=<span class="ot">None</span>):
-    <span class="co">&quot;grouper(3, 'ABCDEFG', 'x') --&gt; ABC DEF Gxx&quot;</span>
+    <span class="co">&quot;grouper(3, &#39;ABCDEFG&#39;, &#39;x&#39;) --&gt; ABC DEF Gxx&quot;</span>
     args = [<span class="dt">iter</span>(iterable)] * n
     <span class="kw">return</span> izip_longest(fillvalue=fillvalue, *args)
 
 <span class="kw">def</span> sine_wave(frequency=<span class="fl">440.0</span>, framerate=<span class="dv">44100</span>, amplitude=<span class="fl">0.5</span>):
-    <span class="co">'''</span>
+    <span class="co">&#39;&#39;&#39;</span>
 <span class="co">    Generate a sine wave at a given frequency of infinite length.</span>
-<span class="co">    '''</span>
+<span class="co">    &#39;&#39;&#39;</span>
     period = <span class="dt">int</span>(framerate / frequency)
     <span class="kw">if</span> amplitude &gt; <span class="fl">1.0</span>: amplitude = <span class="fl">1.0</span>
     <span class="kw">if</span> amplitude &lt; <span class="fl">0.0</span>: amplitude = <span class="fl">0.0</span>
@@ -185,18 +157,18 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
     <span class="kw">return</span> (math.exp(-(<span class="dt">float</span>(i%length)/<span class="dt">float</span>(framerate))) * s <span class="kw">for</span> i, s in <span class="dt">enumerate</span>(sine_wave(frequency, framerate, amplitude)))
 
 <span class="kw">def</span> white_noise(amplitude=<span class="fl">0.5</span>):
-    <span class="co">'''</span>
+    <span class="co">&#39;&#39;&#39;</span>
 <span class="co">    Generate random samples.</span>
-<span class="co">    '''</span>
+<span class="co">    &#39;&#39;&#39;</span>
     <span class="kw">return</span> (<span class="dt">float</span>(amplitude) * random.uniform(-<span class="dv">1</span>, <span class="dv">1</span>) <span class="kw">for</span> i in count(<span class="dv">0</span>))
 
 <span class="kw">def</span> compute_samples(channels, nsamples=<span class="ot">None</span>):
-    <span class="co">'''</span>
+    <span class="co">&#39;&#39;&#39;</span>
 <span class="co">    create a generator which computes the samples.</span>
 
 <span class="co">    essentially it creates a sequence of the sum of each function in the channel</span>
 <span class="co">    at each sample in the file for each channel.</span>
-<span class="co">    '''</span>
+<span class="co">    &#39;&#39;&#39;</span>
     <span class="kw">return</span> islice(izip(*(imap(<span class="dt">sum</span>, izip(*channel)) <span class="kw">for</span> channel in channels)), nsamples)
 
 <span class="kw">def</span> write_wavefile(filename, samples, nframes=<span class="ot">None</span>, nchannels=<span class="dv">2</span>, sampwidth=<span class="dv">2</span>, framerate=<span class="dv">44100</span>, bufsize=<span class="dv">2048</span>):
@@ -204,14 +176,14 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
     <span class="kw">if</span> nframes is <span class="ot">None</span>:
         nframes = -<span class="dv">1</span>
 
-    w = wave.<span class="dt">open</span>(filename, <span class="st">'w'</span>)
-    w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">'NONE'</span>, <span class="st">'not compressed'</span>))
+    w = wave.<span class="dt">open</span>(filename, <span class="st">&#39;w&#39;</span>)
+    w.setparams((nchannels, sampwidth, framerate, nframes, <span class="st">&#39;NONE&#39;</span>, <span class="st">&#39;not compressed&#39;</span>))
 
     max_amplitude = <span class="dt">float</span>(<span class="dt">int</span>((<span class="dv">2</span> ** (sampwidth * <span class="dv">8</span>)) / <span class="dv">2</span>) - <span class="dv">1</span>)
 
     <span class="co"># split the samples into chunks (to reduce memory consumption and improve performance)</span>
     <span class="kw">for</span> chunk in grouper(bufsize, samples):
-        frames = <span class="st">''</span>.join(<span class="st">''</span>.join(struct.pack(<span class="st">'h'</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
+        frames = <span class="st">&#39;&#39;</span>.join(<span class="st">&#39;&#39;</span>.join(struct.pack(<span class="st">&#39;h&#39;</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
         w.writeframesraw(frames)
     
     w.close()
@@ -224,7 +196,7 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
 
     <span class="co"># split the samples into chunks (to reduce memory consumption and improve performance)</span>
     <span class="kw">for</span> chunk in grouper(bufsize, samples):
-        frames = <span class="st">''</span>.join(<span class="st">''</span>.join(struct.pack(<span class="st">'h'</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
+        frames = <span class="st">&#39;&#39;</span>.join(<span class="st">&#39;&#39;</span>.join(struct.pack(<span class="st">&#39;h&#39;</span>, <span class="dt">int</span>(max_amplitude * sample)) <span class="kw">for</span> sample in channels) <span class="kw">for</span> channels in chunk <span class="kw">if</span> channels is not <span class="ot">None</span>)
         f.write(frames)
     
     f.close()
@@ -233,13 +205,13 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
 
 <span class="kw">def</span> main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(<span class="st">'-c'</span>, <span class="st">'--channels'</span>, <span class="dt">help</span>=<span class="st">&quot;Number of channels to produce&quot;</span>, default=<span class="dv">2</span>, <span class="dt">type</span>=<span class="dt">int</span>)
-    parser.add_argument(<span class="st">'-b'</span>, <span class="st">'--bits'</span>, <span class="dt">help</span>=<span class="st">&quot;Number of bits in each sample&quot;</span>, choices=(<span class="dv">16</span>,), default=<span class="dv">16</span>, <span class="dt">type</span>=<span class="dt">int</span>)
-    parser.add_argument(<span class="st">'-r'</span>, <span class="st">'--rate'</span>, <span class="dt">help</span>=<span class="st">&quot;Sample rate in Hz&quot;</span>, default=<span class="dv">44100</span>, <span class="dt">type</span>=<span class="dt">int</span>)
-    parser.add_argument(<span class="st">'-t'</span>, <span class="st">'--time'</span>, <span class="dt">help</span>=<span class="st">&quot;Duration of the wave in seconds.&quot;</span>, default=<span class="dv">60</span>, <span class="dt">type</span>=<span class="dt">int</span>)
-    parser.add_argument(<span class="st">'-a'</span>, <span class="st">'--amplitude'</span>, <span class="dt">help</span>=<span class="st">&quot;Amplitude of the wave on a scale of 0.0-1.0.&quot;</span>, default=<span class="fl">0.5</span>, <span class="dt">type</span>=<span class="dt">float</span>)
-    parser.add_argument(<span class="st">'-f'</span>, <span class="st">'--frequency'</span>, <span class="dt">help</span>=<span class="st">&quot;Frequency of the wave in Hz&quot;</span>, default=<span class="fl">440.0</span>, <span class="dt">type</span>=<span class="dt">float</span>)
-    parser.add_argument(<span class="st">'filename'</span>, <span class="dt">help</span>=<span class="st">&quot;The file to generate.&quot;</span>)
+    parser.add_argument(<span class="st">&#39;-c&#39;</span>, <span class="st">&#39;--channels&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Number of channels to produce&quot;</span>, default=<span class="dv">2</span>, <span class="dt">type</span>=<span class="dt">int</span>)
+    parser.add_argument(<span class="st">&#39;-b&#39;</span>, <span class="st">&#39;--bits&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Number of bits in each sample&quot;</span>, choices=(<span class="dv">16</span>,), default=<span class="dv">16</span>, <span class="dt">type</span>=<span class="dt">int</span>)
+    parser.add_argument(<span class="st">&#39;-r&#39;</span>, <span class="st">&#39;--rate&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Sample rate in Hz&quot;</span>, default=<span class="dv">44100</span>, <span class="dt">type</span>=<span class="dt">int</span>)
+    parser.add_argument(<span class="st">&#39;-t&#39;</span>, <span class="st">&#39;--time&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Duration of the wave in seconds.&quot;</span>, default=<span class="dv">60</span>, <span class="dt">type</span>=<span class="dt">int</span>)
+    parser.add_argument(<span class="st">&#39;-a&#39;</span>, <span class="st">&#39;--amplitude&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Amplitude of the wave on a scale of 0.0-1.0.&quot;</span>, default=<span class="fl">0.5</span>, <span class="dt">type</span>=<span class="dt">float</span>)
+    parser.add_argument(<span class="st">&#39;-f&#39;</span>, <span class="st">&#39;--frequency&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;Frequency of the wave in Hz&quot;</span>, default=<span class="fl">440.0</span>, <span class="dt">type</span>=<span class="dt">float</span>)
+    parser.add_argument(<span class="st">&#39;filename&#39;</span>, <span class="dt">help</span>=<span class="st">&quot;The file to generate.&quot;</span>)
     args = parser.parse_args()
 
     <span class="co"># each channel is defined by infinite functions which are added to produce a sample.</span>
@@ -249,7 +221,7 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
     samples = compute_samples(channels, args.rate * args.time)
 
     <span class="co"># write the samples to a file</span>
-    <span class="kw">if</span> args.filename == <span class="st">'-'</span>:
+    <span class="kw">if</span> args.filename == <span class="st">&#39;-&#39;</span>:
         filename = sys.stdout
     <span class="kw">else</span>:
         filename = args.filename
@@ -272,17 +244,17 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
 <span class="ch">from</span> itertools <span class="ch">import</span> *
 
 <span class="kw">def</span> sbagen_phrase(phrase):
-    <span class="co">'''</span>
+    <span class="co">&#39;&#39;&#39;</span>
 <span class="co">    147.0+4.0/1.27 -&gt; two sine_waves. one 145.0 hz; one 149.0 hz. each at amplitude of 0.0127.</span>
-<span class="co">    '''</span>
-    <span class="kw">if</span> <span class="st">'pink'</span> in phrase:
+<span class="co">    &#39;&#39;&#39;</span>
+    <span class="kw">if</span> <span class="st">&#39;pink&#39;</span> in phrase:
 		<span class="co"># pink/40 -&gt; white_noise(amplitude=0.4)</span>
-        amplitude = <span class="dt">float</span>(phrase.split(<span class="st">'/'</span>)[-<span class="dv">1</span>]) / <span class="fl">100.0</span>
+        amplitude = <span class="dt">float</span>(phrase.split(<span class="st">&#39;/&#39;</span>)[-<span class="dv">1</span>]) / <span class="fl">100.0</span>
         <span class="kw">return</span> (white_noise(amplitude),
                 white_noise(amplitude))
 
-    carrier, remainder = re.split(<span class="st">'[+-]'</span>, phrase, <span class="dv">1</span>)
-    beatfreq, amplitude = remainder.split(<span class="st">'/'</span>)
+    carrier, remainder = re.split(<span class="st">&#39;[+-]&#39;</span>, phrase, <span class="dv">1</span>)
+    beatfreq, amplitude = remainder.split(<span class="st">&#39;/&#39;</span>)
 
     carrier = <span class="dt">float</span>(carrier)
     beatfreq = <span class="dt">float</span>(beatfreq)
@@ -292,13 +264,13 @@ samples = (<span class="dt">int</span>(sample * max_amplitude) <span class="kw">
             sine_wave((carrier + beatfreq/<span class="dv">2</span>), amplitude=amplitude))
 
 <span class="kw">def</span> sbagen_line(line, length=<span class="ot">None</span>):
-    <span class="co">'''</span>
+    <span class="co">&#39;&#39;&#39;</span>
 <span class="co">    Given a sequence of (l, r), (l, r), return a sequence of (l, l), (r, r).</span>
-<span class="co">    '''</span>
+<span class="co">    &#39;&#39;&#39;</span>
     <span class="kw">return</span> izip(*(imap(<span class="kw">lambda</span> s: islice(s, length), sbagen_phrase(phrase)) <span class="kw">for</span> phrase in line.split()))
 
 <span class="kw">if</span> sys.argv[<span class="dv">1</span>:]:
-    channels = sbagen_line(<span class="st">' '</span>.join(sys.argv[<span class="dv">1</span>:]))
+    channels = sbagen_line(<span class="st">&#39; &#39;</span>.join(sys.argv[<span class="dv">1</span>:]))
 <span class="kw">else</span>:
     sys.exit(<span class="dv">1</span>)
 
@@ -339,52 +311,7 @@ channels = ((waves(),), (waves(), white_noise(amplitude=<span class="fl">0.001</
 samples = compute_samples(channels, <span class="ot">None</span>)
 write_wavefile(sys.stdout, samples, <span class="ot">None</span>)</code></pre>
 <h2 id="conclusion">Conclusion</h2>
-<p>Well, there’s your daily abuse of <code>itertools</code>. For more <code>itertools</code> madness, check out my <a href="../project-euler-solutions/">Project Euler Solutions</a>.</p>
-  <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
-  </p>
-  <hr />
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-  var disqus_shortname = 'noisehack';
-  (function() {
-    var dsq = document.createElement('script');
-    dsq.type = 'text/javascript';
-    dsq.async = true;
-    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-  })();
-  </script>
-</article>
-
-		<aside id="sidebar">
-<h2>Subscribe</h2>
-<ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-mail"></i> Newsletter</a></li>
-  <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
-  <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
-</ul>
-<h2>Recent</h2>
-fdsa
-</aside>
-
-
-		<footer>
-<p>
-Noisehack is brought to you by <a href="http://zacharydenton.com/">Zach Denton</a>.
-</p>
-<p>
-Grab <a href="http://feeds.feedburner.com/noisehack">the RSS feed</a> or <a href="https://twitter.com/noisehack">follow Noisehack on Twitter</a>.
-</p>
-</footer>
-
-		</div>
-
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-		<script src="../js/main.js"></script>
-	</body>
-</html>
-]]></summary>
+<p>Well, there’s your daily abuse of <code>itertools</code>. For more <code>itertools</code> madness, check out my <a href="/project-euler-solutions/">Project Euler Solutions</a>.</p>]]></summary>
 </entry>
 
 </feed>
