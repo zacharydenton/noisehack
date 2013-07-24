@@ -2,17 +2,12 @@
 @import "preboot.less";
 @import "highlighting.less";
 
-html {
-	border-top: 0.4rem solid @brand-primary;
-}
-
 body {
 	color: @text-color;
 	font-size: @font-size-base;
 	font-family: @font-family-base;
 	line-height: @line-height-base;
 	background-color: @body-background;
-	.retina-image("/img/light_wool.png", "/img/light_wool_@2X.png", 190px, 191px);
 }
 
 a {
@@ -56,10 +51,20 @@ header {
 
 	h1 {
 		margin: 0;
-		color: @brand-primary;
-		font-size: @font-size-huge;
+		font-size: @font-size-massive;
 		line-height: 1;
 		text-align: center;
+        text-transform: uppercase;
+
+        a {
+            color: rgba(127, 255, 0, 0.5);
+            text-shadow: 0.3rem 0.3rem 0 rgba(254, 254, 34, 0.5);
+
+            &:hover {
+                color: rgba(127, 255, 0, 0.7);
+                text-shadow: 0.3rem 0.3rem 0 rgba(254, 254, 34, 0.7);
+            }
+        }
 	}
 
 	nav {

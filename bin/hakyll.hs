@@ -38,8 +38,8 @@ main = hakyllWith config $ do
     match ("pages/**") $ do
         route   $ setRoot `composeRoutes` cleanURL
         compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/page.html" defaultContext
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
+            >>= loadAndApplyTemplate "templates/page.html" urlContext
+            >>= loadAndApplyTemplate "templates/default.html" urlContext
             >>= relativizeUrls
 
     match "posts/*" $ do
@@ -57,7 +57,7 @@ main = hakyllWith config $ do
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Archives"            `mappend`
                     constField "excerpt" "All posts by Zach Denton." `mappend`
-                    defaultContext
+                    urlContext
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
@@ -72,8 +72,8 @@ main = hakyllWith config $ do
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Home"                `mappend`
-                    constField "excerpt" "On life, the universe, and everything." `mappend`
-                    defaultContext
+                    constField "excerpt" "Noisehack is a blog about audio programming." `mappend`
+                    urlContext
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/index.html" indexCtx
@@ -95,11 +95,18 @@ main = hakyllWith config $ do
 pandocWriterOptions :: WriterOptions
 pandocWriterOptions = defaultHakyllWriterOptions { writerHTMLMathMethod = MathJax "" }
 
+stripIndexLink :: (Item a -> Compiler String)
+stripIndexLink = (fmap (maybe empty (dropFileName . toUrl)) . getRoute . itemIdentifier)
+
+urlContext :: Context String
+urlContext =
+    field "url" stripIndexLink `mappend`
+    defaultContext
+
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
-    field "url" (fmap (maybe empty (dropFileName . toUrl)) . getRoute . itemIdentifier) `mappend`
-    defaultContext
+    urlContext
 
 feedCtx :: Context String
 feedCtx =
