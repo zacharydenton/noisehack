@@ -34,10 +34,13 @@
 			<ul>
 				<li><a href="../about/">About</a></li>
 				<li><a href="../archives/">Archives</a></li>
+				<li><a href="http://feeds.feedburner.com/noisehack">RSS</a></li>
+				<li><a href="https://twitter.com/noisehack">Twitter</a></li>
 			</ul>
 			</nav>
 		</header>
 
+		<div id="container">
 		<article>
   <h1>Generate Audio with Python</h1>
 
@@ -338,8 +341,35 @@ samples = compute_samples(channels, <span class="ot">None</span>)
 write_wavefile(sys.stdout, samples, <span class="ot">None</span>)</code></pre>
 <h2 id="conclusion">Conclusion</h2>
 <p>Well, there’s your daily abuse of <code>itertools</code>. For more <code>itertools</code> madness, check out my <a href="../project-euler-solutions/">Project Euler Solutions</a>.</p>
+
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+  var disqus_shortname = 'noisehack';
+  (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
 </article>
 
+		<aside id="sidebar">
+<h2>Subscribe</h2>
+asdf
+<h2>Recent</h2>
+fdsa
+</aside>
+
+
+		<footer>
+<p>
+By <a href="http://zacharydenton.com/">Zach Denton</a>.
+</p>
+</footer>
+
+		</div>
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="../js/main.js"></script>
