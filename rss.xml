@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Noisehack</title>
+    <link href="http://noisehack.com/rss.xml" rel="self" />
+    <link href="http://noisehack.com" />
+    <id>http://noisehack.com/rss.xml</id>
+    <author>
+        <name>Zach Denton</name>
+        <email>z@chdenton.com</email>
+    </author>
+    <updated>Unknown</updated>
+    
+</feed>
