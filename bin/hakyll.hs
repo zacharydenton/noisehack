@@ -71,7 +71,7 @@ main = hakyllWith config $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Home"                `mappend`
+                    constField "title" "Noisehack" `mappend`
                     constField "excerpt" "Noisehack is a blog about audio programming." `mappend`
                     urlContext
 

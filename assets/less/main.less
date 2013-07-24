@@ -1,6 +1,7 @@
 @import "normalize.less";
 @import "preboot.less";
 @import "highlighting.less";
+@import "font.less";
 
 body {
 	color: @text-color;
@@ -131,6 +132,15 @@ header {
 		margin-right: -@size-base;
 		padding: @size-small @size-base;
 	}
+
+	ul {
+		list-style: none;
+		padding-left: 0;
+	}
+
+	a {
+		text-decoration: none;
+	}
 }
 
 article {
@@ -163,6 +173,12 @@ article {
 		margin-left: -@size-large;
 		margin-right: -@size-large;
 		padding: @size-small @size-large;
+	}
+
+	hr {
+		margin: 0 -@size-large @size-large;
+		border: none;
+		border-top: @size-mini solid fade(white, 30%);
 	}
 
 	p {
