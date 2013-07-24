@@ -26,7 +26,6 @@
 		<div id="container">
 		<article>
   <h1>Generate Audio with Python</h1>
-
   <h2 id="introduction">Introduction</h2>
 <p>I’ve been intrigued by the concept of using computers to generate audio for a long time. It turns out that you can generate audio with nothing but the standard library of Python.</p>
 <p>The approach I used relies heavily on the <code>itertools</code> module. Essentially, I use <code>itertools</code> to create infinite generators and then take some data from these generators to produce the audio. The resultant sequence of floats in the range [-1.0, 1.0] is converted to 16 bit PCM audio (i.e., a sequence of signed 16 bit integers in the range [-32767, 32767]) and then written to a .wav file using the <code>wave</code> module. <!--more--></p>
@@ -324,7 +323,10 @@ samples = compute_samples(channels, <span class="ot">None</span>)
 write_wavefile(sys.stdout, samples, <span class="ot">None</span>)</code></pre>
 <h2 id="conclusion">Conclusion</h2>
 <p>Well, there’s your daily abuse of <code>itertools</code>. For more <code>itertools</code> madness, check out my <a href="../project-euler-solutions/">Project Euler Solutions</a>.</p>
-
+  <hr />
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  </p>
+  <hr />
   <div id="disqus_thread"></div>
   <script type="text/javascript">
   var disqus_shortname = 'noisehack';
@@ -340,7 +342,11 @@ write_wavefile(sys.stdout, samples, <span class="ot">None</span>)</code></pre>
 
 		<aside id="sidebar">
 <h2>Subscribe</h2>
-asdf
+<ul>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-mail"></i> Newsletter</a></li>
+  <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
+  <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
+</ul>
 <h2>Recent</h2>
 fdsa
 </aside>
@@ -348,7 +354,10 @@ fdsa
 
 		<footer>
 <p>
-By <a href="http://zacharydenton.com/">Zach Denton</a>.
+Noisehack is brought to you by <a href="http://zacharydenton.com/">Zach Denton</a>.
+</p>
+<p>
+Grab <a href="http://feeds.feedburner.com/noisehack">the RSS feed</a> or <a href="https://twitter.com/noisehack">follow Noisehack on Twitter</a>.
 </p>
 </footer>
 
