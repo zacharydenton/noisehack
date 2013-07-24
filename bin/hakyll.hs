@@ -108,6 +108,7 @@ baseCtx =
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
+    teaserField "teaser" "content" `mappend`
     baseCtx
 
 feedCtx :: Context String

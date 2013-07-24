@@ -128,8 +128,7 @@ header {
 		background: fade(white, 30%);
 		font-size: @size-medium;
 		font-weight: bold;
-		margin-left: -@size-base;
-		margin-right: -@size-base;
+		margin: @size-base -@size-base;
 		padding: @size-small @size-base;
 	}
 
@@ -137,6 +136,18 @@ header {
 		list-style: none;
 		padding: 0;
 		margin: 0;
+
+		&:last-child {
+			margin-bottom: @size-base;
+		}
+	}
+
+	li.post {
+		padding-bottom: @size-mini;
+
+		&:last-child {
+			padding-bottom: 0;
+		}
 	}
 
 	a {
@@ -148,7 +159,7 @@ article {
 	padding: @size-large;
   .box-sizing(border-box);
 	margin-right: -@size-small;
-	margin-bottom: @size-large;
+	margin-bottom: (2 * @size-base) - (2 * @size-mini);
 	float: right;
 	background-color: fade(#f1f3f6, 90%);
 	font-size: @size-base;
@@ -180,7 +191,7 @@ article {
 	hr {
 		margin: 0 -@size-large @size-base;
 		border: none;
-		border-top: @size-mini solid fade(white, 30%);
+		border-top: @size-base solid fade(white, 30%);
 	}
 
 	p {
