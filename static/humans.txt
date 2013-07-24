@@ -1,0 +1,11 @@
+/* the humans responsible & colophon */
+/* humanstxt.org */
+
+/* TEAM */
+  Author: Zach Denton
+  Twitter: @zacharydenton
+  Location: Hanover, NH
+
+/* SITE */
+  Components: Normalize.css, Preboot
+  Software: Hakyll, LESS, CoffeeScript

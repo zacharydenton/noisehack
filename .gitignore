@@ -1,0 +1,9 @@
+bin/.cache
+bin/hakyll.hi
+bin/hakyll.ho
+bin/hakyll.o
+bin/hakyll
+_deploy/
+_cache/
+_site/
+*.swp
