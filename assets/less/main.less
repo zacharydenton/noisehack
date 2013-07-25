@@ -52,23 +52,35 @@ header {
 
 	h1 {
 		margin: 0;
-		font-size: @size-epic;
+		font-size: @size-massive;
 		line-height: 1;
 		text-align: center;
 		text-transform: uppercase;
 		font-family: "Iceberg", @headings-font-family;
+		letter-spacing: -@size-small;
 
-		@media(max-width: 480px) {
-			font-size: @size-huge;
+		.header-shadow(@offset, @opacity) {
+			color: rgba(127, 255, 0, @opacity);
+			text-shadow: @offset @offset 0 rgba(254, 254, 34, @opacity);
+		}
+
+		@media (min-width: (@sidebar-width + @article-width)) {
+			font-size: @size-epic;
 		}
 
 		a {
-			color: rgba(127, 255, 0, 0.5);
-			text-shadow: @size-mini @size-mini 0 rgba(254, 254, 34, 0.5);
-
+			.header-shadow(@size-micro, 0.5);
+				
 			&:hover {
-				color: rgba(127, 255, 0, 0.7);
-				text-shadow: @size-mini @size-mini 0 rgba(254, 254, 34, 0.7);
+				.header-shadow(@size-micro, 0.7);
+			}
+
+			@media (min-width: (@sidebar-width + @article-width)) {
+				.header-shadow(@size-mini, 0.5);
+
+				&:hover {
+					.header-shadow(@size-mini, 0.7);
+				}
 			}
 		}
 	}
@@ -109,20 +121,30 @@ header {
 }
 
 #container {
-	width: @sidebar-width + @article-width;
+	max-width: @article-width;
 	padding: @size-small 0;
 	background: rgba(180, 210, 150, 0.5);
 	.center-block;
 	.clearfix;
+
+	@media (min-width: (@sidebar-width + @article-width)) {
+		width: @sidebar-width + @article-width;
+		max-width: none;
+	}
 }
 
 #sidebar {
+	display: none;
 	padding: @size-base;
   .box-sizing(border-box);
 	margin-left: -@size-small;
 	width: @sidebar-width;
 	background-color: fade(#f1f3f6, 90%);
 	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
+
+	@media (min-width: (@sidebar-width + @article-width)) {
+		display: block;
+	}
 
 	h2 {
 		background: fade(white, 30%);
@@ -143,7 +165,7 @@ header {
 	}
 
 	li.post {
-		padding-bottom: @size-mini;
+		padding-bottom: @size-small;
 
 		&:last-child {
 			padding-bottom: 0;
@@ -158,15 +180,19 @@ header {
 article {
 	padding: @size-large;
   .box-sizing(border-box);
-	margin-right: -@size-small;
 	margin-bottom: (2 * @size-base) - (2 * @size-mini);
-	float: right;
 	background-color: fade(#f1f3f6, 90%);
 	font-size: @size-base;
-	width: @article-width;
 	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
 	text-rendering: optimizeLegibility;
 	word-wrap: break-word;
+
+	@media (min-width: (@sidebar-width + @article-width)) {
+		float: right;
+		width: @article-width;
+		margin-right: -@size-small;
+		margin-left: -@size-small;
+	}
 
 	h1, h2, h3, h4, h5, h6 {
 		margin: @size-base 0 @size-base 0;
@@ -177,6 +203,15 @@ article {
 		margin-bottom: @size-large;
 		font-weight: bold;
 		font-size: @size-larger;
+		letter-spacing: -@size-nano;
+
+		a {
+			text-shadow: fade(@link-color, 25%) 0 0 20px;
+
+			&:hover {
+				text-shadow: fade(@link-color-hover, 75%) 0 0 20px;
+			}
+		}
 	}
 
 	h2 {
@@ -238,11 +273,14 @@ article {
 footer {
 	padding: 0 @size-base;
   .box-sizing(border-box);
-	margin-left: -@size-small;
-	margin-right: -@size-small;
 	margin-top: @size-large;
 	background-color: fade(#f1f3f6, 90%);
 	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
 	.clearfix;
 	clear: both;
+
+	@media (min-width: (@sidebar-width + @article-width)) {
+		margin-right: -@size-small;
+		margin-left: -@size-small;
+	}
 }
