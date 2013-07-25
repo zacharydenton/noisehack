@@ -29,9 +29,6 @@
   };
 
   $(function() {
-    $('h1, h2, h3, li, p, li a').each(function() {
-      return $(this).html($(this).html().replace(/\s([\w.:\(\)\-]+)$/, '&nbsp;$1'));
-    });
     $(window).resize(setShadow);
     return setShadow();
   });
