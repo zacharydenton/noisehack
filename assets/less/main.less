@@ -1,7 +1,7 @@
 @import "normalize.less";
 @import "preboot.less";
 @import "highlighting.less";
-@import "font.less";
+@import "elusive-webfont.less";
 
 body {
 	color: @text-color;
@@ -162,8 +162,9 @@ header {
 
 #container {
 	max-width: @article-width;
-	padding: @size-small 0;
-	background: rgba(180, 210, 150, 0.5);
+	padding: @size-mini 0;
+	//background: rgba(180, 210, 150, 0.5);
+	background: fade(white, 30%);
 	.center-block;
 	.clearfix;
 
@@ -180,7 +181,7 @@ header {
 	margin-left: -@size-small;
 	width: @sidebar-width;
 	background-color: fade(#f1f3f6, 90%);
-	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
+	.box-shadow(~"-@{size-micro} -@{size-micro} 0 rgba(127, 255, 0, 0.5), @{size-micro} @{size-micro} 0 rgba(254, 254, 34, 0.5)");
 
 	@media (min-width: (@sidebar-width + @article-width)) {
 		display: block;
@@ -204,11 +205,14 @@ header {
 		}
 	}
 
-	li.post {
-		padding-bottom: @size-small;
+	ul.recent {
 
-		&:last-child {
-			padding-bottom: 0;
+		li {
+			padding-bottom: @size-small;
+
+			&:last-child {
+				padding-bottom: 0;
+			}
 		}
 	}
 
@@ -223,7 +227,7 @@ article {
 	margin-bottom: (2 * @size-base) - (2 * @size-mini);
 	background-color: fade(#f1f3f6, 90%);
 	font-size: @size-base;
-	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
+	.box-shadow(~"-@{size-micro} -@{size-micro} 0 rgba(127, 255, 0, 0.5), @{size-micro} @{size-micro} 0 rgba(254, 254, 34, 0.5)");
 	text-rendering: optimizeLegibility;
 	word-wrap: break-word;
 
@@ -335,10 +339,11 @@ article {
 
 footer {
 	padding: 0 @size-base;
+	font-size: @size-medsmall;
   .box-sizing(border-box);
 	margin-top: @size-large;
 	background-color: fade(#f1f3f6, 90%);
-	.box-shadow(~"-@{size-mini} -@{size-mini} 0 rgba(127, 255, 0, 0.5), @{size-mini} @{size-mini} 0 rgba(254, 254, 34, 0.5)");
+	.box-shadow(~"-@{size-micro} -@{size-micro} 0 rgba(127, 255, 0, 0.5), @{size-micro} @{size-micro} 0 rgba(254, 254, 34, 0.5)");
 	.clearfix;
 	clear: both;
 
