@@ -133,7 +133,7 @@ header {
 
 				a {
 					padding: @size-mini @size-small;
-					color: #f3f6f1;
+					color: @text-color;
 					background-color: rgba(127, 255, 0, 0.5);
 					.box-shadow(@size-micro @size-micro 0 rgba(254, 254, 34, 0.5));
 
@@ -163,7 +163,6 @@ header {
 #container {
 	max-width: @article-width;
 	padding: @size-mini 0;
-	//background: rgba(180, 210, 150, 0.5);
 	background: fade(white, 30%);
 	.center-block;
 	.clearfix;
@@ -201,14 +200,13 @@ header {
 		margin: 0;
 
 		&:last-child {
-			margin-bottom: @size-base;
+			margin-bottom: @size-small;
 		}
 	}
 
 	ul.recent {
-
 		li {
-			padding-bottom: @size-small;
+			padding-bottom: @size-base;
 
 			&:last-child {
 				padding-bottom: 0;
@@ -258,9 +256,11 @@ article {
 		}
 
 		a {
+			color: inherit;
 			text-shadow: fade(@link-color, 25%) 0 0 20px;
 
 			&:hover {
+				color: @link-color-hover;
 				text-shadow: fade(@link-color-hover, 75%) 0 0 20px;
 			}
 		}

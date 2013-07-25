@@ -30,7 +30,7 @@
 
 // Scaffolding
 @body-background:         @black-90;
-@text-color:              @black-80;
+@text-color:              #3d3e3d;
 
 // Links
 @link-color:              #468607;
@@ -409,4 +409,11 @@
     background-image: url("@{file-2x}");
     background-size: @width-1x @height-1x;
   }
+}
+
+.mask-image(@path) {
+	-webkit-mask-image: url("@{path}");
+	-o-mask-image: url("@{path}");
+	-moz-mask-image: url("@{path}");
+	mask-image: url("@{path}");
 }
