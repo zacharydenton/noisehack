@@ -210,7 +210,7 @@ header {
 
 	ul.recent {
 		li {
-			padding-bottom: @size-base;
+			padding-bottom: @size-small;
 
 			&:last-child {
 				padding-bottom: 0;
@@ -260,12 +260,11 @@ article {
 		}
 
 		a {
-			color: inherit;
-			text-shadow: fade(@link-color, 25%) 0 0 20px;
+			color: @text-color;
 
 			&:hover {
-				color: @link-color-hover;
-				text-shadow: fade(@link-color-hover, 75%) 0 0 20px;
+				color: @link-color;
+				text-shadow: fade(@link-color, 75%) 0 0 20px;
 			}
 		}
 	}
@@ -332,12 +331,6 @@ article {
 		word-wrap: normal;
 		white-space: pre;
 		overflow: auto;
-	}
-
-	code {
-		font-size: @size-medsmall;
-		line-height: @size-base;
-		vertical-align: middle;
 	}
 }
 
