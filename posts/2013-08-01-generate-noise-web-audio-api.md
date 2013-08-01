@@ -1,5 +1,5 @@
 ---
-title: How to Generate Noise with the Web&nbsp;Audio&nbsp;API
+title: How to Generate Noise with the Web Audio API
 excerpt: Learn how to generate white noise, pink noise, and brown noise with the Web Audio API.
 ---
 
@@ -8,6 +8,10 @@ native support for generating noise. This post will teach you how to
 overcome that limitation.
 
 <!--more-->
+
+If you want to skip to the good part, check out [the demo][]. Also, I've
+packaged all the noise generators into a small library called [noise.js
+(available on GitHub)][].
 
 White Noise
 -----------
@@ -84,7 +88,7 @@ var bufferSize = 4096;
 var pinkNoise = (function() {
     var b0, b1, b2, b3, b4, b5, b6;
     b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
+    var node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
     node.onaudioprocess = function(e) {
         var output = e.outputBuffer.getChannelData(0);
         for (var i = 0; i < bufferSize; i++) {
@@ -124,7 +128,7 @@ Audio API:
 var bufferSize = 4096;
 var brownNoise = (function() {
     var lastOut = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
+    var node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
     node.onaudioprocess = function(e) {
         var output = e.outputBuffer.getChannelData(0);
         for (var i = 0; i < bufferSize; i++) {
@@ -158,63 +162,23 @@ Pink Noise
 <button id="brown-demo">
 Brown Noise
 </button>
+<script type="text/javascript" src="/js/noise.js"></script>
 <script type="text/javascript">
 var audioContext = new webkitAudioContext();
 
-var bufferSize = 4096;
-
-var whiteNoise = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-whiteNoise.onaudioprocess = function(e) {
-    var output = e.outputBuffer.getChannelData(0);
-    for (var i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-    }
-}
+var whiteNoise = audioContext.createWhiteNoise();
 var whiteGain = audioContext.createGainNode();
 whiteGain.gain.value = 0;
 whiteNoise.connect(whiteGain);
 whiteGain.connect(audioContext.destination);
 
-var pinkNoise = (function() {
-    var b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-    node.onaudioprocess = function(e) {
-        var output = e.outputBuffer.getChannelData(0);
-        for (var i = 0; i < bufferSize; i++) {
-            var white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179;
-            b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520;
-            b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522;
-            b5 = -0.7616 * b5 - white * 0.0168980;
-            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-            output[i] *= 0.11; // (roughly) compensate for gain
-            b6 = white * 0.115926;
-        }
-    }
-    return node;
-})();
+var pinkNoise = audioContext.createPinkNoise();
 var pinkGain = audioContext.createGainNode();
 pinkGain.gain.value = 0;
 pinkNoise.connect(pinkGain);
 pinkGain.connect(audioContext.destination);
 
-var brownNoise = (function() {
-    var lastOut = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-    node.onaudioprocess = function(e) {
-        var output = e.outputBuffer.getChannelData(0);
-        for (var i = 0; i < bufferSize; i++) {
-            var white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.02 * white)) / 1.02;
-            lastOut = output[i];
-            output[i] *= 3.5; // (roughly) compensate for gain
-        }
-    }
-    return node;
-})();
+var brownNoise = audioContext.createBrownNoise();
 var brownGain = audioContext.createGainNode();
 brownGain.gain.value = 0;
 brownNoise.connect(brownGain);
@@ -224,7 +188,7 @@ var toggleDemo = function(text, gain) {
     var handler = function(e) {
         if (gain.gain.value == 0.0) {
             $(e.target).text("Stop");
-            gain.gain.value = 1.0;
+            gain.gain.value = 0.3;
         } else {
             $(e.target).text(text);
             gain.gain.value = 0.0;
@@ -245,6 +209,8 @@ Just click on the buttons to turn the noise on and off.
     range [-1.0, 1.0].
 
   [Web Audio API]: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html
+  [the demo]: #demo
+  [noise.js (available on GitHub)]: https://github.com/zacharydenton/noise.js
   [it might be inefficient]: https://medium.com/web-audio/61a836e28b42
   [Paul Kellet's refined method]: http://www.musicdsp.org/files/pink.txt
   [Csound source code]: http://sourceforge.net/p/csound/csound6-git/ci/master/tree/Opcodes/pitch.c#l1336

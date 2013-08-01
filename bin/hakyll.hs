@@ -35,6 +35,10 @@ main = hakyllWith config $ do
             >>= withItemBody
                 (unixFilter "coffee" ["--stdio", "--compile"])
 
+    match "assets/js/**.js" $ do
+        route $ setRoot `composeRoutes` setExtension "js"
+        compile $ copyFileCompiler
+
     match ("pages/**") $ do
         route   $ setRoot `composeRoutes` cleanURL
         compile $ pandocCompiler
