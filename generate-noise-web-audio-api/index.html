@@ -30,6 +30,7 @@
   <p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
 <!--more-->
 
+<p>If you want to skip to the good part, check out <a href="#demo">the demo</a>. Also, I’ve packaged all the noise generators into a small library called <a href="https://github.com/zacharydenton/noise.js">noise.js (available on GitHub)</a>.</p>
 <h2 id="white-noise">White Noise</h2>
 <p>The most common type of noise is <em>white noise</em>. White noise is perfectly random audio data with a flat frequency spectrum.</p>
 <p>To produce white noise, we simply compute a series of random samples<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
@@ -66,7 +67,7 @@
 <span class="kw">var</span> pinkNoise = (<span class="kw">function</span>() {
     <span class="kw">var</span> b0, b1, b2, b3, b4, b5, b6;
     b0 = b1 = b2 = b3 = b4 = b5 = b6 = <span class="fl">0.0</span>;
-    node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
     <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
         <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
         <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
@@ -92,7 +93,7 @@
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
 <span class="kw">var</span> brownNoise = (<span class="kw">function</span>() {
     <span class="kw">var</span> lastOut = <span class="fl">0.0</span>;
-    node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
     <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
         <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
         <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
@@ -119,63 +120,23 @@ Pink Noise
 <button id="brown-demo">
 Brown Noise
 </button>
+<script type="text/javascript" src="../js/noise.js"></script>
 <script type="text/javascript">
 var audioContext = new webkitAudioContext();
 
-var bufferSize = 4096;
-
-var whiteNoise = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-whiteNoise.onaudioprocess = function(e) {
-    var output = e.outputBuffer.getChannelData(0);
-    for (var i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-    }
-}
+var whiteNoise = audioContext.createWhiteNoise();
 var whiteGain = audioContext.createGainNode();
 whiteGain.gain.value = 0;
 whiteNoise.connect(whiteGain);
 whiteGain.connect(audioContext.destination);
 
-var pinkNoise = (function() {
-    var b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-    node.onaudioprocess = function(e) {
-        var output = e.outputBuffer.getChannelData(0);
-        for (var i = 0; i < bufferSize; i++) {
-            var white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179;
-            b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520;
-            b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522;
-            b5 = -0.7616 * b5 - white * 0.0168980;
-            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-            output[i] *= 0.11; // (roughly) compensate for gain
-            b6 = white * 0.115926;
-        }
-    }
-    return node;
-})();
+var pinkNoise = audioContext.createPinkNoise();
 var pinkGain = audioContext.createGainNode();
 pinkGain.gain.value = 0;
 pinkNoise.connect(pinkGain);
 pinkGain.connect(audioContext.destination);
 
-var brownNoise = (function() {
-    var lastOut = 0.0;
-    node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
-    node.onaudioprocess = function(e) {
-        var output = e.outputBuffer.getChannelData(0);
-        for (var i = 0; i < bufferSize; i++) {
-            var white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.02 * white)) / 1.02;
-            lastOut = output[i];
-            output[i] *= 3.5; // (roughly) compensate for gain
-        }
-    }
-    return node;
-})();
+var brownNoise = audioContext.createBrownNoise();
 var brownGain = audioContext.createGainNode();
 brownGain.gain.value = 0;
 brownNoise.connect(brownGain);
