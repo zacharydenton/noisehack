@@ -1,21 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Noisehack</title>
-    <link href="http://noisehack.com/rss.xml" rel="self" />
-    <link href="http://noisehack.com" />
-    <id>http://noisehack.com/rss.xml</id>
-    <author>
-        <name>Zach Denton</name>
-        <email>z@chdenton.com</email>
-    </author>
-    <updated>2013-08-01T00:00:00Z</updated>
-    <entry>
-    <title>How to Generate Noise with the Web&nbsp;Audio&nbsp;API</title>
-    <link href="http://noisehack.com/how-to-generate-noise-with-web-audio-api/" />
-    <id>http://noisehack.com/how-to-generate-noise-with-web-audio-api/</id>
-    <published>2013-08-01T00:00:00Z</published>
-    <updated>2013-08-01T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<title>How to Generate Noise with the Web Audio API</title>
+		<meta name="description" content="Learn how to generate white noise, pink noise, and brown noise with the Web Audio API.">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="canonical" href="http://noisehack.com/how-to-generate-noise-with-web-audio-api/">
+		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="../css/main.css">
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="../js/main.js"></script>
+	</head>
+	<body>
+		<header role="banner">
+			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<nav>
+			<ul>
+				<li><a href="../about/">About</a></li>
+				<li><a href="../archives/">Archives</a></li>
+				<li><a href="http://feeds.feedburner.com/noisehack">RSS</a></li>
+				<li><a href="https://twitter.com/noisehack">Twitter</a></li>
+			</ul>
+			</nav>
+		</header>
+
+		<div id="container">
+		<article>
+  <h1>How to Generate Noise with the Web Audio API</h1>
+  <p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
 <!--more-->
 
 <h2 id="white-noise">White Noise</h2>
@@ -194,7 +206,49 @@ $("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
 <ol>
 <li id="fn1"><p>In the Web Audio API, samples are floating-point numbers in the range [-1.0, 1.0].<a href="#fnref1">↩</a></p></li>
 </ol>
-</div>]]></summary>
-</entry>
+</div>
+  <hr />
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  </p>
+  <hr />
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+  var disqus_shortname = 'noisehack';
+  (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+</article>
 
-</feed>
+		<aside id="sidebar">
+<h2>Subscribe</h2>
+<ul>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
+  <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
+</ul>
+<h2>Recent</h2>
+<ul class="recent">
+  
+  <li><a href="../how-to-generate-noise-with-web-audio-api/"><i class="icon-asterisk"></i> How to Generate Noise with the Web Audio API</a></li>
+  
+</ul>
+</aside>
+
+
+		<footer>
+<p>
+Noisehack is brought to you by <a href="http://zacharydenton.com/">Zach Denton</a>.
+</p>
+<p>
+Grab <a href="http://feeds.feedburner.com/noisehack">the RSS feed</a> or <a href="https://twitter.com/noisehack">follow Noisehack on Twitter</a>.
+</p>
+</footer>
+
+		</div>
+	</body>
+</html>
