@@ -303,15 +303,24 @@ article {
 		margin: 0 0 @size-base 0;
 	}
 
-	img, iframe {
-		max-width: 100%;
-		margin: 0 0 @size-base 0;
-		.center-block;
-	}
+	.figure {
+		margin-left: -@size-large;
+		margin-right: -@size-large;
+        margin-bottom: @size-base;
 
-	.caption {
-		text-align: center;
-		font-style: italic;
+        img {
+            width: 100%;
+        }
+
+	    .caption {
+            display: none;
+	    }
+
+        &:hover {
+            .caption {
+                display: none;
+            }
+        }
 	}
 
 	b, strong {
