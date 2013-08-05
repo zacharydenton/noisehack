@@ -1,21 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Noisehack</title>
-    <link href="http://noisehack.com/rss.xml" rel="self" />
-    <link href="http://noisehack.com" />
-    <id>http://noisehack.com/rss.xml</id>
-    <author>
-        <name>Zach Denton</name>
-        <email>z@chdenton.com</email>
-    </author>
-    <updated>2013-08-03T00:00:00Z</updated>
-    <entry>
-    <title>How to Build a Monotron Synth with the Web Audio API</title>
-    <link href="http://noisehack.com/how-to-build-monotron-synth-web-audio-api/" />
-    <id>http://noisehack.com/how-to-build-monotron-synth-web-audio-api/</id>
-    <published>2013-08-03T00:00:00Z</published>
-    <updated>2013-08-03T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<div class="figure">
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<title>How to Build a Monotron Synth with the Web Audio API</title>
+		<meta name="description" content="Recreate the Korg Monotron synthesizer with JavaScript and the Web Audio API.">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="canonical" href="http://noisehack.com/how-to-build-monotron-synth-web-audio-api/">
+		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="../css/main.css">
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="../js/main.js"></script>
+	</head>
+	<body>
+		<header role="banner">
+			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<nav>
+			<ul>
+				<li><a href="../about/">About</a></li>
+				<li><a href="../archives/">Archives</a></li>
+				<li><a href="http://feeds.feedburner.com/noisehack">RSS</a></li>
+				<li><a href="https://twitter.com/noisehack">Twitter</a></li>
+			</ul>
+			</nav>
+		</header>
+
+		<div id="container">
+		<article>
+  <h1>How to Build a Monotron Synth with the Web Audio API</h1>
+  <div class="figure">
 <img src="https://lh3.googleusercontent.com/-IB3Rw79rchE/Uf2tCgK4LyI/AAAAAAAAxvk/WT5SFo6O8Ug/s0/kor-monotron_3.jpg" alt="Korg Monotron synthesizer" /><p class="caption">Korg Monotron synthesizer</p>
 </div>
 <p>The <a href="http://www.amazon.com/dp/B003DX96TW/?tag=zacden-20">Monotron</a> is an awesome little analog synth by Korg. In this post, you’ll learn how to recreate the Monotron with the Web Audio API.</p>
@@ -227,7 +239,7 @@
   }));
 
   <span class="kw">this</span>.<span class="fu">addComponent</span>(<span class="kw">new</span> <span class="ot">Ui</span>.<span class="fu">Pointer</span>(<span class="kw">this</span>.<span class="fu">merge</span>(<span class="kw">this</span>.<span class="fu">options</span>, {
-    <span class="dt">type</span>: <span class="st">&#39;Rect&#39;</span>,
+    <span class="dt">type</span>: <span class="st">'Rect'</span>,
     <span class="dt">pointerWidth</span>: <span class="kw">this</span>.<span class="fu">width</span> / <span class="dv">10</span>
   })));
 
@@ -252,7 +264,7 @@
 <span class="kw">}</span></code></pre>
 <p>And then initialize the knobs when the page is finished loading:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">$ <span class="fu">-&gt;</span>
-  $<span class="kw">(</span><span class="st">&#39;.knob input&#39;</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
+  $<span class="kw">(</span><span class="st">'.knob input'</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
     knopf <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>knob<span class="kw">,</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span></code></pre>
 <h2 id="the-ribbon-keyboard">The Ribbon Keyboard</h2>
 <p>At this point, we’ve got the audio circuit and the control panel. The remaining component is the ribbon keyboard. Looking at the Monotron’s keyboard, my first instinct was to use canvas. However, canvas is not the right approach here, because it’s not scalable<sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. I just used (dynamically-generated) HTML and CSS for the keyboard interface:</p>
@@ -262,14 +274,14 @@
 <span class="kw">class</span> <span class="dt">RibbonKeyboard</span>
   <span class="kw">constructor:</span> <span class="fu">(@$el, @monotron) -&gt;</span>
     <span class="dt">@minNote</span> <span class="kw">=</span> <span class="dv">57</span>
-    $ul <span class="kw">=</span> $<span class="kw">(</span><span class="st">&#39;&lt;ul&gt;&#39;</span><span class="kw">)</span>
+    $ul <span class="kw">=</span> $<span class="kw">(</span><span class="st">'&lt;ul&gt;'</span><span class="kw">)</span>
     <span class="kw">for</span> note <span class="kw">in</span> <span class="kw">[</span><span class="dv">1</span><span class="kw">..</span><span class="dv">18</span><span class="kw">]</span>
-      $key <span class="kw">=</span> $<span class="kw">(</span><span class="st">&#39;&lt;li&gt;&#39;</span><span class="kw">)</span>
+      $key <span class="kw">=</span> $<span class="kw">(</span><span class="st">'&lt;li&gt;'</span><span class="kw">)</span>
       <span class="kw">if</span> note <span class="kw">in</span> <span class="kw">[</span><span class="dv">2</span><span class="kw">,</span> <span class="dv">5</span><span class="kw">,</span> <span class="dv">7</span><span class="kw">,</span> <span class="dv">10</span><span class="kw">,</span> <span class="dv">12</span><span class="kw">,</span> <span class="dv">14</span><span class="kw">,</span> <span class="dv">17</span><span class="kw">]</span>
-        $key<span class="kw">.</span>addClass <span class="st">&#39;accidental&#39;</span>
+        $key<span class="kw">.</span>addClass <span class="st">'accidental'</span>
         $key<span class="kw">.</span>width <span class="kw">(</span><span class="dt">@$el</span><span class="kw">.</span>width<span class="kw">()</span> <span class="kw">/</span> <span class="dv">20</span><span class="kw">)</span>
-        $key<span class="kw">.</span>css <span class="st">&#39;left&#39;</span><span class="kw">,</span> <span class="st">&quot;-</span><span class="ch">#{</span>$key.width() / 2<span class="ch">}</span><span class="st">px&quot;</span>
-        $key<span class="kw">.</span>css <span class="st">&#39;margin-right&#39;</span><span class="kw">,</span> <span class="st">&quot;-</span><span class="ch">#{</span>$key.width()<span class="ch">}</span><span class="st">px&quot;</span>
+        $key<span class="kw">.</span>css <span class="st">'left'</span><span class="kw">,</span> <span class="st">&quot;-</span><span class="ch">#{</span>$key.width() / 2<span class="ch">}</span><span class="st">px&quot;</span>
+        $key<span class="kw">.</span>css <span class="st">'margin-right'</span><span class="kw">,</span> <span class="st">&quot;-</span><span class="ch">#{</span>$key.width()<span class="ch">}</span><span class="st">px&quot;</span>
       <span class="kw">else</span> <span class="kw">if</span> note <span class="kw">in</span> <span class="kw">[</span><span class="dv">1</span><span class="kw">,</span> <span class="dv">18</span><span class="kw">]</span>
         $key<span class="kw">.</span>width <span class="kw">(</span><span class="dt">@$el</span><span class="kw">.</span>width<span class="kw">()</span> <span class="kw">/</span> <span class="dv">20</span><span class="kw">)</span>
       <span class="kw">else</span>
@@ -346,7 +358,7 @@
   masterGain<span class="kw">.</span>connect audioContext<span class="kw">.</span>destination
   monotron<span class="kw">.</span>connect masterGain
 
-  keyboard <span class="kw">=</span> <span class="kw">new</span> <span class="dt">RibbonKeyboard</span><span class="kw">(</span>$<span class="kw">(</span><span class="st">&#39;#keyboard&#39;</span><span class="kw">),</span> monotron<span class="kw">)</span></code></pre>
+  keyboard <span class="kw">=</span> <span class="kw">new</span> <span class="dt">RibbonKeyboard</span><span class="kw">(</span>$<span class="kw">(</span><span class="st">'#keyboard'</span><span class="kw">),</span> monotron<span class="kw">)</span></code></pre>
 <p>We create a new <code>AudioContext</code> (keeping in mind that current browsers name it differently), a new <code>Monotron</code> audio circuit, and the <code>masterGain</code> node. The <code>masterGain</code> node is important because it prevents the audio from exceeding the maximum value of +/-1.0. If the audio did exceed +/-1.0, it would result in distortion known as <em>clipping</em>. After connecting these nodes together, we create a new <code>RibbonKeyboard</code> and connect it to the audio circuit.</p>
 <p>Now you should be able to play some notes with the keyboard. Right now, the sound isn’t so hot. To fix that, we need to hook up the control panel. There’s one complication: audio parameters should be adjusted on a logarithmic scale (because that’s how our ears work), but the knobs only provide a linear scale. We’ll need to override the knobs’ <code>.changed</code> method to accomodate this:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">  <span class="co"># ... rest of $(document).ready callback ...</span>
@@ -372,7 +384,7 @@
       scale<span class="kw">:</span> <span class="fl">1.10</span>
 
   knopfs <span class="kw">=</span> <span class="kw">[]</span>
-  $<span class="kw">(</span><span class="st">&#39;.knob input&#39;</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
+  $<span class="kw">(</span><span class="st">'.knob input'</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
     knopf <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>knob<span class="kw">,</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span>
     knopfs<span class="kw">.</span>push knopf
     param <span class="kw">=</span> params<span class="kw">[</span>knob<span class="kw">.</span>id<span class="kw">]</span>
@@ -392,7 +404,7 @@
 <p>The pitch knob isn’t controlling an <code>AudioParam</code>, so it’s a special case. It adjusts the minimum note on the keyboard.</p>
 <p>Next we’ll hook up the modulation router. If it’s set to “Standby”, the LFO will be disabled. Otherwise, the LFO will modulate either the VCO frequency (“Pitch”) or the VCF cutoff frequency (“Cutoff”).</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">  <span class="co"># ... rest of $(document).ready callback ...</span>
-  $<span class="kw">(</span><span class="st">&#39;#mod&#39;</span><span class="kw">).</span>change <span class="fu">(e) -&gt;</span>
+  $<span class="kw">(</span><span class="st">'#mod'</span><span class="kw">).</span>change <span class="fu">(e) -&gt;</span>
     target <span class="kw">=</span> $<span class="kw">(</span><span class="dt">this</span><span class="kw">).</span>find<span class="kw">(</span><span class="st">&quot;:selected&quot;</span><span class="kw">).</span>val<span class="kw">()</span>
     monotron<span class="kw">.</span>lfoGain<span class="kw">.</span>disconnect<span class="kw">()</span>
     <span class="kw">if</span> target <span class="kw">is</span> <span class="st">&quot;Pitch&quot;</span>
@@ -421,155 +433,51 @@
 <li id="fn2"><p>I use LESS to <a href="https://github.com/zacharydenton/monotron/blob/master/css/preboot.less#L45">calculate this automatically</a>.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Canvas isn’t scalable by default, but if you redraw whenever the window is resized, you can make it seem like it is.<a href="#fnref3">↩</a></p></li>
 </ol>
-</div>]]></summary>
-</entry>
-<entry>
-    <title>How to Generate Noise with the Web Audio API</title>
-    <link href="http://noisehack.com/generate-noise-web-audio-api/" />
-    <id>http://noisehack.com/generate-noise-web-audio-api/</id>
-    <published>2013-08-01T00:00:00Z</published>
-    <updated>2013-08-01T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
-<!--more-->
+</div>
+  <hr />
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  </p>
+  <hr />
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+  var disqus_shortname = 'noisehack';
+  (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+</article>
 
-<p>If you want to skip to the good part, check out <a href="#demo">the demo</a>. Also, I’ve packaged all the noise generators into a small library called <a href="https://github.com/zacharydenton/noise.js">noise.js (available on GitHub)</a>.</p>
-<h2 id="white-noise">White Noise</h2>
-<p>The most common type of noise is <em>white noise</em>. White noise is perfectly random audio data with a flat frequency spectrum.</p>
-<p>To produce white noise, we simply compute a series of random samples<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
-<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
-<span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
-<span class="ot">whiteNoise</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
-    <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
-    <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
-        output[i] = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
-    }
-}
+		<aside id="sidebar">
+<h2>Subscribe</h2>
+<ul>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
+  <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
+</ul>
+<h2>Recent</h2>
+<ul class="recent">
+  
+  <li><a href="../how-to-build-monotron-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Monotron Synth with the Web Audio API</a></li>
+  
+  <li><a href="../generate-noise-web-audio-api/"><i class="icon-asterisk"></i> How to Generate Noise with the Web Audio API</a></li>
+  
+</ul>
+</aside>
 
-<span class="ot">whiteNoise</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);</code></pre>
-<p>This works, but depending on the application, <a href="https://medium.com/web-audio/61a836e28b42">it might be inefficient</a>. With a buffer size of 4096, the <code>onaudioprocess</code> callback is being executed around 10 times per second. Not a problem if you’re building an ambient sound generator that only uses a single instance of white noise, but if you’re building, say, a polyphonic synthesizer with noise-modulated filters, this computational overhead will introduce latency.</p>
-<p>A more efficient approach is to generate a buffer of white noise and then loop through it:</p>
-<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">2</span> * <span class="ot">audioContext</span>.<span class="fu">sampleRate</span>,
-    noiseBuffer = <span class="ot">audioContext</span>.<span class="fu">createBuffer</span>(<span class="dv">1</span>, bufferSize, <span class="ot">audioContext</span>.<span class="fu">sampleRate</span>),
-    output = <span class="ot">noiseBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
-<span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
-    output[i] = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
-}
 
-<span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createBufferSource</span>();
-<span class="ot">whiteNoise</span>.<span class="fu">buffer</span> = noiseBuffer;
-<span class="ot">whiteNoise</span>.<span class="fu">loop</span> = <span class="kw">true</span>;
-<span class="ot">whiteNoise</span>.<span class="fu">start</span>(<span class="dv">0</span>);
-
-<span class="ot">whiteNoise</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);</code></pre>
-<p>This code generates two seconds of white noise and then loops through it continuously. The primary disadvantage of this approach is that the same chunk of noise is being reused, over and over. Depending on how large the noise buffer is, this means you might be able to hear the noise repeating. In practice, I’ve found that this is only noticeable when the noise buffer is less than two seconds long.</p>
-<h2 id="pink-noise">Pink Noise</h2>
-<p>The next type of noise we’ll be generating is <em>pink noise</em>. Whereas white noise has equal power across the frequency spectrum, pink noise <em>sounds</em> like it has equal power across the frequency spectrum. Our ears process frequencies logarithmically, and pink noise takes this into account. In terms of ambient noise, I find that pink noise sounds <em>much</em> nicer than white noise, which is too harsh in the upper frequencies.</p>
-<p>To generate pink noise, we’ll approximate the effects of a -3dB/octave filter using <a href="http://www.musicdsp.org/files/pink.txt">Paul Kellet’s refined method</a>:</p>
-<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
-<span class="kw">var</span> pinkNoise = (<span class="kw">function</span>() {
-    <span class="kw">var</span> b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = <span class="fl">0.0</span>;
-    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
-    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
-        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
-        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
-            <span class="kw">var</span> white = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
-            b0 = <span class="fl">0.99886</span> * b0 + white * <span class="fl">0.0555179</span>;
-            b1 = <span class="fl">0.99332</span> * b1 + white * <span class="fl">0.0750759</span>;
-            b2 = <span class="fl">0.96900</span> * b2 + white * <span class="fl">0.1538520</span>;
-            b3 = <span class="fl">0.86650</span> * b3 + white * <span class="fl">0.3104856</span>;
-            b4 = <span class="fl">0.55000</span> * b4 + white * <span class="fl">0.5329522</span>;
-            b5 = -<span class="fl">0.7616</span> * b5 - white * <span class="fl">0.0168980</span>;
-            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * <span class="fl">0.5362</span>;
-            output[i] *= <span class="fl">0.11</span>; <span class="co">// (roughly) compensate for gain</span>
-            b6 = white * <span class="fl">0.115926</span>;
-        }
-    }
-    <span class="kw">return</span> node;
-})();
-
-<span class="ot">pinkNoise</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);</code></pre>
-<p>So the code to generate pink noise is quite a bit more complex than the code to generate white noise. The <code>pinkNoise</code> node is wrapped within a closure because we want the values of <code>b0</code> through <code>b6</code> (the filter state) to persist between calls to <code>onaudioprocess</code>. The 0.11 scaling factor is taken from the <a href="http://sourceforge.net/p/csound/csound6-git/ci/master/tree/Opcodes/pitch.c#l1336">Csound source code</a>.</p>
-<h2 id="brownian-noise">Brownian Noise</h2>
-<p>Let’s move on to <em>Brownian noise</em> (also known as brown noise or red noise). Brownian noise decreases in power by 12dB/octave, and sounds like a waterfall. Here’s how to generate Brownian noise with the Web Audio API:</p>
-<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
-<span class="kw">var</span> brownNoise = (<span class="kw">function</span>() {
-    <span class="kw">var</span> lastOut = <span class="fl">0.0</span>;
-    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
-    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
-        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
-        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
-            <span class="kw">var</span> white = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
-            output[i] = (lastOut + (<span class="fl">0.02</span> * white)) / <span class="fl">1.02</span>;
-            lastOut = output[i];
-            output[i] *= <span class="fl">3.5</span>; <span class="co">// (roughly) compensate for gain</span>
-        }
-    }
-    <span class="kw">return</span> node;
-})();
-
-<span class="ot">brownNoise</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);</code></pre>
-<p>Again, a closure is used to keep track of variables that need to persist between calls to <code>onaudioprocess</code>.</p>
-<h2 id="demo">Demo</h2>
-<p>Here are the three different kinds of noise in action:</p>
+		<footer>
 <p>
-<button id="white-demo">
-White Noise
-</button>
-<button id="pink-demo">
-Pink Noise
-</button>
-<button id="brown-demo">
-Brown Noise
-</button>
-<script type="text/javascript" src="/js/noise.js"></script>
-<script type="text/javascript">
-var audioContext = new webkitAudioContext();
-
-var whiteNoise = audioContext.createWhiteNoise();
-var whiteGain = audioContext.createGainNode();
-whiteGain.gain.value = 0;
-whiteNoise.connect(whiteGain);
-whiteGain.connect(audioContext.destination);
-
-var pinkNoise = audioContext.createPinkNoise();
-var pinkGain = audioContext.createGainNode();
-pinkGain.gain.value = 0;
-pinkNoise.connect(pinkGain);
-pinkGain.connect(audioContext.destination);
-
-var brownNoise = audioContext.createBrownNoise();
-var brownGain = audioContext.createGainNode();
-brownGain.gain.value = 0;
-brownNoise.connect(brownGain);
-brownGain.connect(audioContext.destination);
-
-var toggleDemo = function(text, gain) {
-    var handler = function(e) {
-        if (gain.gain.value == 0.0) {
-            $(e.target).text("Stop");
-            gain.gain.value = 0.3;
-        } else {
-            $(e.target).text(text);
-            gain.gain.value = 0.0;
-        }
-    };
-    return handler;
-};
-
-$("#white-demo").click(toggleDemo("White Noise", whiteGain));
-$("#pink-demo").click(toggleDemo("Pink Noise", pinkGain));
-$("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
-</script>
+Noisehack is brought to you by <a href="http://zacharydenton.com/">Zach Denton</a>.
 </p>
+<p>
+Grab <a href="http://feeds.feedburner.com/noisehack">the RSS feed</a> or <a href="https://twitter.com/noisehack">follow Noisehack on Twitter</a>.
+</p>
+</footer>
 
-<p>Just click on the buttons to turn the noise on and off.</p>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>In the Web Audio API, samples are floating-point numbers in the range [-1.0, 1.0].<a href="#fnref1">↩</a></p></li>
-</ol>
-</div>]]></summary>
-</entry>
-
-</feed>
+		</div>
+	</body>
+</html>
