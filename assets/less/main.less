@@ -306,21 +306,26 @@ article {
 	.figure {
 		margin-left: -@size-large;
 		margin-right: -@size-large;
-        margin-bottom: @size-base;
+		margin-bottom: @size-base;
 
-        img {
-            width: 100%;
-        }
+		img {
+			width: 100%;
+		}
 
-	    .caption {
-            display: none;
-	    }
+		.caption {
+			display: none;
+		}
 
-        &:hover {
-            .caption {
-                display: none;
-            }
-        }
+		&:hover {
+			.caption {
+				display: none;
+			}
+		}
+
+		@media (max-width: 30rem) {
+			margin-left: -@size-base;
+			margin-right: -@size-base;
+		}
 	}
 
 	b, strong {
