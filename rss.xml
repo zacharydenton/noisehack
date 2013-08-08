@@ -8,8 +8,232 @@
         <name>Zach Denton</name>
         <email>z@chdenton.com</email>
     </author>
-    <updated>2013-08-03T00:00:00Z</updated>
+    <updated>2013-08-07T00:00:00Z</updated>
     <entry>
+    <title>Custom Audio Effects in JavaScript with the Web Audio API</title>
+    <link href="http://noisehack.com/custom-audio-effects-javascript-web-audio-api/" />
+    <id>http://noisehack.com/custom-audio-effects-javascript-web-audio-api/</id>
+    <published>2013-08-07T00:00:00Z</published>
+    <updated>2013-08-07T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<p>You can get pretty far with the built-in Web Audio API nodes, but to really turn things up to 11, you may need to write custom audio effects in JavaScript. This post shows you how.</p>
+<!--more-->
+
+<p>To demonstrate the effects, we’ll be using the following reference tone throughout the post:</p>
+<pre style="display: none">var effect = audioContext.createGainNode();</pre>
+<p><button class="demo">
+Reference Tone
+</button></p>
+
+<h2 id="simple-lowpass-filter">Simple Lowpass Filter</h2>
+<p>Let’s get warmed up with a <a href="http://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter">simple lowpass filter</a>. This filter simply averages the current input sample with the previous output sample:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
+<span class="kw">var</span> effect = (<span class="kw">function</span>() {
+    <span class="kw">var</span> lastOut = <span class="fl">0.0</span>;
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
+        <span class="kw">var</span> input = <span class="ot">e</span>.<span class="ot">inputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
+            output[i] = (input[i] + lastOut) / <span class="fl">2.0</span>;
+            lastOut = output[i];
+        }
+    }
+    <span class="kw">return</span> node;
+})();</code></pre>
+<p><button class="demo">
+Simple Lowpass
+</button></p>
+
+<p>I don’t know about you, but I could barely tell a difference between that and the reference tone. But take a look at how the effect is coded – this will serve as the basic template for all of the upcoming audio effects.</p>
+<p>The first thing to note is the buffer size. Set it too low, and you’ll get audio glitches known as <a href="http://en.wikipedia.org/wiki/Buffer_underrun">buffer underruns</a>. Set it too high, and you’ll introduce latency. Set it to 0, and the Web Audio API will pick a value for you.</p>
+<p>Now for the actual filter definition. I’ve wrapped it all in a closure to encapsulate the filter’s internal state (in this case, the previous output sample, <code>lastOut</code>). The <code>AudioNode</code> that actually performs the computation is the <code>ScriptProcessor</code>. To create a <code>ScriptProcessor</code>, use <code>audioContext.createScriptProcessor()</code>:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, numInputChannels, numOutputChannels);</code></pre>
+<p>Take a look at how <code>node</code> is instantiated: 1 for <code>numInputChannels</code> and 1 for <code>numOutputChannels</code>. This means that this simple lowpass filter processes audio in mono. The good news is that we don’t have to worry about down-mixing from stereo and up-mixing back to stereo – the Web Audio API takes care of all that automatically.</p>
+<p>The magic happens within the <code>onaudioprocess</code> callback. Within this callback, we get access to two buffers: one for reading the incoming audio data, and the other for writing the outgoing audio data. Each of these is an array of size <code>bufferSize</code>. The general pattern for the <code>onaudioprocess</code> callback is to loop through each sample of input, modify it somehow, and write the corresponding sample of output.</p>
+<p>At this point, you may be wondering how to actually use this effect. It turns out that these custom effects use exactly the same interface as any other <code>AudioNode</code>:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> oscillator = <span class="ot">audioContext</span>.<span class="fu">createOscillator</span>();
+<span class="ot">oscillator</span>.<span class="fu">connect</span>(effect);
+<span class="ot">effect</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);</code></pre>
+<p>On the other hand, this effect doesn’t really do much, and I can’t think of any reason why you’d use it instead of the existing <code>BiquadFilter</code>. Let’s take a look at some more interesting effects.</p>
+<h2 id="pinking-filter">Pinking Filter</h2>
+<p>Previously, I demonstrated how to <a href="/generate-noise-web-audio-api/#pink-noise">generate pink noise with the Web Audio API</a>. It was implemented as a series of filters designed to reduce the amplitude of white noise by 3dB per octave. We can use this same filter series on <em>any</em> input signal – not just white noise.</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
+<span class="kw">var</span> effect = (<span class="kw">function</span>() {
+    <span class="kw">var</span> b0, b1, b2, b3, b4, b5, b6;
+    b0 = b1 = b2 = b3 = b4 = b5 = b6 = <span class="fl">0.0</span>;
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
+        <span class="kw">var</span> input = <span class="ot">e</span>.<span class="ot">inputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
+            b0 = <span class="fl">0.99886</span> * b0 + input[i] * <span class="fl">0.0555179</span>;
+            b1 = <span class="fl">0.99332</span> * b1 + input[i] * <span class="fl">0.0750759</span>;
+            b2 = <span class="fl">0.96900</span> * b2 + input[i] * <span class="fl">0.1538520</span>;
+            b3 = <span class="fl">0.86650</span> * b3 + input[i] * <span class="fl">0.3104856</span>;
+            b4 = <span class="fl">0.55000</span> * b4 + input[i] * <span class="fl">0.5329522</span>;
+            b5 = -<span class="fl">0.7616</span> * b5 - input[i] * <span class="fl">0.0168980</span>;
+            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + input[i] * <span class="fl">0.5362</span>;
+            output[i] *= <span class="fl">0.11</span>; <span class="co">// (roughly) compensate for gain</span>
+            b6 = input[i] * <span class="fl">0.115926</span>;
+        }
+    }
+    <span class="kw">return</span> node;
+})();</code></pre>
+<p><button class="demo">
+Pinking Filter
+</button></p>
+
+<p>Qualitatively speaking, the filter smooths out the reference tone and makes it less “harsh” – kind of like the relationship between pink noise and white noise.</p>
+<p>If you look closely, this filter is using the same basic technique as the simple lowpass filter (averaging the last output sample with the current input sample). The only difference is that now there’s six simple lowpass filters, where previously there was only one. In other words, filter <code>b0</code> averages its last output sample (the previous value of <code>b0</code>) with the current input sample, <code>b1</code> averages its last output sample (the previous value of <code>b1</code>) with the current input sample, and so on. These six filters are then combined together with the appropriate weights to approximate a -3dB/octave filter, in aggregate.</p>
+<h2 id="noise-convolver">Noise Convolver</h2>
+<p>The <code>ConvolverNode</code> is arguably the most powerful node in the Web Audio arsenal. Combined with JavaScript, it’s absolutely devastating.</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> effect = (<span class="kw">function</span>() {
+    <span class="kw">var</span> convolver = <span class="ot">audioContext</span>.<span class="fu">createConvolver</span>(),
+        noiseBuffer = <span class="ot">audioContext</span>.<span class="fu">createBuffer</span>(<span class="dv">2</span>, <span class="fl">0.5</span> * <span class="ot">audioContext</span>.<span class="fu">sampleRate</span>, <span class="ot">audioContext</span>.<span class="fu">sampleRate</span>),
+        left = <span class="ot">noiseBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>),
+        right = <span class="ot">noiseBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">1</span>);
+    <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; <span class="ot">noiseBuffer</span>.<span class="fu">length</span>; i++) {
+        left[i] = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
+        right[i] = <span class="ot">Math</span>.<span class="fu">random</span>() * <span class="dv">2</span> - <span class="dv">1</span>;
+    }
+    <span class="ot">convolver</span>.<span class="fu">buffer</span> = noiseBuffer;
+    <span class="kw">return</span> convolver;
+})();</code></pre>
+<p><button class="demo">
+Noise Convolver
+</button></p>
+
+<p>So what we’ve done here is create 0.5 seconds of stereophonic white noise and a <code>ConvolverNode</code> that uses it. You can create some really interesting effects with this technique: create a sound buffer with JavaScript, then use it to convolve an arbitrary input signal.</p>
+<p>If you don’t know much about convolution, that’s OK. I’ll be covering the <code>ConvolverNode</code> in depth in a future post. For now, I’ll just say that you can use it to emulate anything from the reverb of a massive cathedral hall to the tone of a <a href="http://www.amazon.com/dp/B002PYRHFU/?tag=zacden-20">Vox AC30</a>.</p>
+<h2 id="moog-filter">Moog Filter</h2>
+<p>Many have tried to emulate the <a href="http://en.wikipedia.org/wiki/Minimoog">classic Moog filter</a>; few have succeeded. The following is based on <a href="http://www.musicdsp.org/showArchiveComment.php?ArchiveID=26">a pretty good approximation</a>:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
+<span class="kw">var</span> effect = (<span class="kw">function</span>() {
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="kw">var</span> in1, in2, in3, in4, out1, out2, out3, out4;
+    in1 = in2 = in3 = in4 = out1 = out2 = out3 = out4 = <span class="fl">0.0</span>;
+    <span class="ot">node</span>.<span class="fu">cutoff</span> = <span class="fl">0.065</span>; <span class="co">// between 0.0 and 1.0</span>
+    <span class="ot">node</span>.<span class="fu">resonance</span> = <span class="fl">3.99</span>; <span class="co">// between 0.0 and 4.0</span>
+    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
+        <span class="kw">var</span> input = <span class="ot">e</span>.<span class="ot">inputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">var</span> f = <span class="ot">node</span>.<span class="fu">cutoff</span> * <span class="fl">1.16</span>;
+        <span class="kw">var</span> fb = <span class="ot">node</span>.<span class="fu">resonance</span> * (<span class="fl">1.0</span> - <span class="fl">0.15</span> * f * f);
+        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
+            input[i] -= out4 * fb;
+            input[i] *= <span class="fl">0.35013</span> * (f*f)*(f*f);
+            out1 = input[i] + <span class="fl">0.3</span> * in1 + (<span class="dv">1</span> - f) * out1; <span class="co">// Pole 1</span>
+            in1 = input[i];
+            out2 = out1 + <span class="fl">0.3</span> * in2 + (<span class="dv">1</span> - f) * out2; <span class="co">// Pole 2</span>
+            in2 = out1;
+            out3 = out2 + <span class="fl">0.3</span> * in3 + (<span class="dv">1</span> - f) * out3; <span class="co">// Pole 3</span>
+            in3 = out2;
+            out4 = out3 + <span class="fl">0.3</span> * in4 + (<span class="dv">1</span> - f) * out4; <span class="co">// Pole 4</span>
+            in4 = out3;
+            output[i] = out4;
+        }
+    }
+    <span class="kw">return</span> node;
+})();</code></pre>
+<p><button class="demo">
+Moog Filter
+</button></p>
+
+<p>Notice the resonance. The caveat with this approach is that you can’t modulate <code>cutoff</code> and <code>frequency</code> the way you can with a normal <code>AudioParam</code>. I thought I could get around this by creating a dummy <code>BiquadFilter</code> and hijacking its <code>frequency</code> and <code>Q</code> parameters. Unfortunately, the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#computedValue-AudioParam-section"><code>computedValue</code> attribute referenced in the docs</a> doesn’t appear to be publicly accessible. If anyone knows a way around this, I’d be very interested to hear about it.</p>
+<h2 id="bitcrusher">Bitcrusher</h2>
+<p>Let’s take a look at one last effect: the lo-fi bitcrusher (<a href="http://www.musicdsp.org/showArchiveComment.php?ArchiveID=139">based on this code</a>):</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
+<span class="kw">var</span> effect = (<span class="kw">function</span>() {
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="ot">node</span>.<span class="fu">bits</span> = <span class="dv">4</span>; <span class="co">// between 1 and 16</span>
+    <span class="ot">node</span>.<span class="fu">normfreq</span> = <span class="fl">0.1</span>; <span class="co">// between 0.0 and 1.0</span>
+    <span class="kw">var</span> step = <span class="ot">Math</span>.<span class="fu">pow</span>(<span class="dv">1</span>/<span class="dv">2</span>, <span class="ot">node</span>.<span class="fu">bits</span>);
+    <span class="kw">var</span> phaser = <span class="dv">0</span>;
+    <span class="kw">var</span> last = <span class="dv">0</span>;
+    <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
+        <span class="kw">var</span> input = <span class="ot">e</span>.<span class="ot">inputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
+        <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
+            phaser += <span class="ot">node</span>.<span class="fu">normfreq</span>;
+            <span class="kw">if</span> (phaser &gt;= <span class="fl">1.0</span>) {
+                phaser -= <span class="fl">1.0</span>;
+                last = step * <span class="ot">Math</span>.<span class="fu">floor</span>(input[i] / step + <span class="fl">0.5</span>);
+            }
+            output[i] = last;
+        }
+    };
+    <span class="kw">return</span> node;
+})();</code></pre>
+<p><button class="demo">
+Bitcrusher
+</button></p>
+
+<p>It works by quantizing the input signal. In other words, it samples the input signal every so often, then “holds” that sample until it’s time to sample again (based on the <code>bits</code> and <code>normfreq</code> settings).</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Hopefully this will get you started implementing some crazy audio effects. There’s a whole <a href="http://musicdsp.org/">wild world of DSP algorithms</a> out there, just waiting to be implemented in JavaScript.</p>
+<p>For a great practical introduction to the art of programming audio effects, I highly recommend <a href="http://www.amazon.com/dp/0240825152/?tag=zacden-20">Designing Audio Effect Plug-Ins in C++</a>. It was published in 2013 and covers the <a href="/research/VAFilterDesign_1.0.3.pdf">cutting-edge of virtual analog filter design</a>, among many other interesting topics.</p>
+<p>As I was researching for this article, I noticed there’s not really any good central repository for DSP effects. With the Web Audio API, a <a href="http://glsl.heroku.com/">GLSL sandbox</a> for audio effects is suddenly possible. I think a central repository for open-source audio effects with in-browser previews would be really cool. If anyone is interested in building such a platform, <script type="text/javascript">
+<!--
+h='&#110;&#x6f;&#x69;&#x73;&#x65;&#104;&#x61;&#x63;&#x6b;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#122;&#x61;&#x63;&#104;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'">'+'let me know'+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#108;&#x65;&#116;&#32;&#x6d;&#x65;&#32;&#x6b;&#110;&#x6f;&#x77;&#32;&#40;&#122;&#x61;&#x63;&#104;&#32;&#x61;&#116;&#32;&#110;&#x6f;&#x69;&#x73;&#x65;&#104;&#x61;&#x63;&#x6b;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;&#x29;</noscript>.</p>
+<script>
+$(function() {
+    var audioContext = new (typeof AudioContext !== "undefined" && AudioContext !== null ? AudioContext : webkitAudioContext);
+    var masterGain = audioContext.createGain();
+    masterGain.gain.value = 0.1;
+    masterGain.connect(audioContext.destination);
+
+    var stopDemo = function($button) {
+        $button.removeAttr('disabled');
+    };
+
+    var startDemo = function($button) {
+        var now = audioContext.currentTime;
+
+        var effect = eval($button.parent().prev('pre').text() + "effect;");
+        var sawWave = audioContext.createOscillator();
+        sawWave.type = sawWave.SAWTOOTH;
+        sawWave.start(now);
+        var effectGain = audioContext.createGain();
+
+        effect.connect(effectGain);
+        effectGain.connect(masterGain);
+        sawWave.connect(effect);
+
+        /* Sweep from A3 to A6. */
+        sawWave.frequency.setValueAtTime(220, now);
+        sawWave.frequency.linearRampToValueAtTime(1760, now + 4);
+
+        /* Play raw wave through effect, then fade out. */
+        effectGain.gain.setValueAtTime(1.0, now);
+        effectGain.gain.setValueAtTime(1.0, now + 4);
+        effectGain.gain.linearRampToValueAtTime(0.0, now + 5);
+
+        $button.attr('disabled', '');
+        setTimeout(function() { stopDemo($button); }, 5000);
+    };
+
+    $("button.demo").each(function(i, button) {
+        $(button).click(function(e) {
+            var $button = $(this);
+            if ($button.attr('disabled')) {
+                stopDemo($button);
+            } else {
+                startDemo($button);
+            }
+        });
+    });
+});
+</script>
+
+
+
+
+]]></summary>
+</entry>
+<entry>
     <title>How to Build a Monotron Synth with the Web Audio API</title>
     <link href="http://noisehack.com/how-to-build-monotron-synth-web-audio-api/" />
     <id>http://noisehack.com/how-to-build-monotron-synth-web-audio-api/</id>
