@@ -4,8 +4,8 @@ excerpt: Learn how to implement custom effects and filters with the Web Audio AP
 ---
 
 You can get pretty far with the built-in Web Audio API nodes, but to
-really turn things up to 11, you may need to write some custom audio
-effects in JavaScript. This post shows you how.
+really turn things up to 11, you may need to write custom audio effects
+in JavaScript. This post shows you how.
 
 <!--more-->
 
@@ -70,11 +70,11 @@ processes audio in mono. The good news is that we don't have to worry
 about down-mixing from stereo and up-mixing back to stereo -- the Web
 Audio API takes care of all that automatically.
 
-To actually process the audio, we define the `onaudioprocess` callback.
-Within this callback, we get access to two buffers: one for reading the
-incoming audio data, and the other for writing the outgoing audio data.
-Each of these is an array of size `bufferSize`. The general pattern for
-the `onaudioprocess` callback is to loop through each sample of input,
+The magic happens within the `onaudioprocess` callback. Within this
+callback, we get access to two buffers: one for reading the incoming
+audio data, and the other for writing the outgoing audio data. Each of
+these is an array of size `bufferSize`. The general pattern for the
+`onaudioprocess` callback is to loop through each sample of input,
 modify it somehow, and write the corresponding sample of output.
 
 At this point, you may be wondering how to actually use this effect. It
@@ -132,15 +132,15 @@ Qualitatively speaking, the filter smooths out the reference tone and
 makes it less "harsh" -- kind of like the relationship between pink
 noise and white noise.
 
-If you look closely, this filter series is using the same basic
-technique as the simple lowpass filter (averaging the last output sample
-with the current input sample). The only difference is that now there's
-six simple lowpass filters, where previously there was only one. In
-other words, filter `b0` averages its last output sample (the previous
-value of `b0`) with the current input sample, `b1` averages its last
-output sample (the previous value of `b1`) with the current input
-sample, and so on. These six filters are then combined together with the
-appropriate weights to approximate a -3dB/octave filter, in aggregate.
+If you look closely, this filter is using the same basic technique as
+the simple lowpass filter (averaging the last output sample with the
+current input sample). The only difference is that now there's six
+simple lowpass filters, where previously there was only one. In other
+words, filter `b0` averages its last output sample (the previous value
+of `b0`) with the current input sample, `b1` averages its last output
+sample (the previous value of `b1`) with the current input sample, and
+so on. These six filters are then combined together with the appropriate
+weights to approximate a -3dB/octave filter, in aggregate.
 
 Noise Convolver
 ---------------
@@ -168,9 +168,9 @@ Noise Convolver
 </button></p>
 
 So what we've done here is create 0.5 seconds of stereophonic white
-noise with JavaScript and a `ConvolverNode` that uses this noise. You
-can create some really interesting effects this way: create a sound
-buffer with JavaScript, then convolve an arbitrary input signal with it.
+noise and a `ConvolverNode` that uses it. You can create some really
+interesting effects with this technique: create a sound buffer with
+JavaScript, then use it to convolve an arbitrary input signal.
 
 If you don't know much about convolution, that's OK. I'll be covering
 the `ConvolverNode` in depth in a future post. For now, I'll just say
@@ -189,8 +189,8 @@ var effect = (function() {
     var node = audioContext.createScriptProcessor(bufferSize, 1, 1);
     var in1, in2, in3, in4, out1, out2, out3, out4;
     in1 = in2 = in3 = in4 = out1 = out2 = out3 = out4 = 0.0;
-    node.cutoff = 0.065;
-    node.resonance = 3.99;
+    node.cutoff = 0.065; // between 0.0 and 1.0
+    node.resonance = 3.99; // between 0.0 and 4.0
     node.onaudioprocess = function(e) {
         var input = e.inputBuffer.getChannelData(0);
         var output = e.outputBuffer.getChannelData(0);
@@ -219,22 +219,70 @@ Moog Filter
 </button></p>
 
 Notice the resonance. The caveat with this approach is that you can't
-modulate `cutoff` and `frequency` the way you would with normal
-`AudioParams`. I thought I could get around this by creating a dummy
+modulate `cutoff` and `frequency` the way you can with a normal
+`AudioParam`. I thought I could get around this by creating a dummy
 `BiquadFilter` and hijacking its `frequency` and `Q` parameters.
 Unfortunately, the [`computedValue` attribute referenced in the docs][]
 doesn't appear to be publicly accessible. If anyone knows a way around
 this, I'd be very interested to hear about it.
+
+Bitcrusher
+----------
+
+Let's take a look at one last effect: the lo-fi bitcrusher ([based on this code][]):
+
+~~~~ {.javascript}
+var bufferSize = 4096;
+var effect = (function() {
+    var node = audioContext.createScriptProcessor(bufferSize, 1, 1);
+    node.bits = 4; // between 1 and 16
+    node.normfreq = 0.1; // between 0.0 and 1.0
+    var step = Math.pow(1/2, node.bits);
+    var phaser = 0;
+    var last = 0;
+    node.onaudioprocess = function(e) {
+        var input = e.inputBuffer.getChannelData(0);
+        var output = e.outputBuffer.getChannelData(0);
+        for (var i = 0; i < bufferSize; i++) {
+            phaser += node.normfreq;
+            if (phaser >= 1.0) {
+                phaser -= 1.0;
+                last = step * Math.floor(input[i] / step + 0.5);
+            }
+            output[i] = last;
+        }
+    };
+    return node;
+})();
+~~~~
+
+<p><button class="demo">
+Bitcrusher
+</button></p>
+
+It works by quantizing the input signal. In other words, it samples the
+input signal every so often, then "holds" that sample until it's time to
+sample again (based on the `bits` and `normfreq` settings).
 
 Conclusion
 ----------
 
 Hopefully this will get you started implementing some crazy audio
 effects. There's a whole [wild world of DSP algorithms][] out there,
-just waiting to be implemented in JavaScript. For a great practical
-introduction to the state-of-the-art, I highly recommend [Designing
-Audio Effect Plug-Ins in C++][]. It was published in 2013 and covers the
-[cutting-edge of virtual analog filter design][].
+just waiting to be implemented in JavaScript.
+
+For a great practical
+introduction to the art of programming audio effects, I highly recommend
+[Designing Audio Effect Plug-Ins in C++][]. It was published in 2013 and
+covers the [cutting-edge of virtual analog filter design][], among many
+other interesting topics.
+
+As I was researching for this article, I noticed there's not really any
+good central repository for DSP effects. With the Web Audio API, a [GLSL
+sandbox][] for audio effects is suddenly possible. I think a central
+repository for open-source audio effects with in-browser previews would
+be really cool. If anyone is interested in building such a platform,
+[let me know][].
 
 <script>
 $(function() {
@@ -297,6 +345,9 @@ $(function() {
   [classic Moog filter]: http://en.wikipedia.org/wiki/Minimoog
   [a pretty good approximation]: http://www.musicdsp.org/showArchiveComment.php?ArchiveID=26
   [`computedValue` attribute referenced in the docs]: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#computedValue-AudioParam-section
+  [based on this code]: http://www.musicdsp.org/showArchiveComment.php?ArchiveID=139
   [wild world of DSP algorithms]: http://musicdsp.org/
   [Designing Audio Effect Plug-Ins in C++]: http://www.amazon.com/dp/0240825152/?tag=zacden-20
   [cutting-edge of virtual analog filter design]: /research/VAFilterDesign_1.0.3.pdf
+  [GLSL sandbox]: http://glsl.heroku.com/
+  [let me know]: mailto:zach@noisehack.com
