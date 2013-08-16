@@ -25,7 +25,7 @@ samples[^1]. One way to do this with the Web Audio API is to use a
 
 ~~~~ {.javascript}
 var bufferSize = 4096;
-var whiteNoise = audioContext.createJavaScriptNode(bufferSize, 1, 1);
+var whiteNoise = audioContext.createScriptProcessor(bufferSize, 1, 1);
 whiteNoise.onaudioprocess = function(e) {
     var output = e.outputBuffer.getChannelData(0);
     for (var i = 0; i < bufferSize; i++) {
@@ -88,7 +88,7 @@ var bufferSize = 4096;
 var pinkNoise = (function() {
     var b0, b1, b2, b3, b4, b5, b6;
     b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    var node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
+    var node = audioContext.createScriptProcessor(bufferSize, 1, 1);
     node.onaudioprocess = function(e) {
         var output = e.outputBuffer.getChannelData(0);
         for (var i = 0; i < bufferSize; i++) {
@@ -128,7 +128,7 @@ Audio API:
 var bufferSize = 4096;
 var brownNoise = (function() {
     var lastOut = 0.0;
-    var node = audioContext.createJavaScriptNode(bufferSize, 1, 1);
+    var node = audioContext.createScriptProcessor(bufferSize, 1, 1);
     node.onaudioprocess = function(e) {
         var output = e.outputBuffer.getChannelData(0);
         for (var i = 0; i < bufferSize; i++) {
