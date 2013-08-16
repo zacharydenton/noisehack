@@ -35,7 +35,7 @@
 <p>The most common type of noise is <em>white noise</em>. White noise is perfectly random audio data with a flat frequency spectrum.</p>
 <p>To produce white noise, we simply compute a series of random samples<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
-<span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+<span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
 <span class="ot">whiteNoise</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
     <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
     <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
@@ -67,7 +67,7 @@
 <span class="kw">var</span> pinkNoise = (<span class="kw">function</span>() {
     <span class="kw">var</span> b0, b1, b2, b3, b4, b5, b6;
     b0 = b1 = b2 = b3 = b4 = b5 = b6 = <span class="fl">0.0</span>;
-    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
     <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
         <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
         <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
@@ -93,7 +93,7 @@
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
 <span class="kw">var</span> brownNoise = (<span class="kw">function</span>() {
     <span class="kw">var</span> lastOut = <span class="fl">0.0</span>;
-    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createJavaScriptNode</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
+    <span class="kw">var</span> node = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
     <span class="ot">node</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
         <span class="kw">var</span> output = <span class="ot">e</span>.<span class="ot">outputBuffer</span>.<span class="fu">getChannelData</span>(<span class="dv">0</span>);
         <span class="kw">for</span> (<span class="kw">var</span> i = <span class="dv">0</span>; i &lt; bufferSize; i++) {
