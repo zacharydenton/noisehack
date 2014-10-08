@@ -6,14 +6,14 @@
 		<meta name="description" content="Build a supersaw synth with CoffeeScript, LESS, and the Web Audio API.">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="canonical" href="http://noisehack.com/how-to-build-supersaw-synth-web-audio-api/">
-		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link href="//fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="../css/main.css">
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="../js/main.js"></script>
 	</head>
 	<body>
 		<header role="banner">
-			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<h1><a href="../">Noisehack</a></h1>
 			<nav>
 			<ul>
 				<li><a href="../about/">About</a></li>
@@ -30,10 +30,9 @@
   <div class="figure">
 <img src="https://lh3.googleusercontent.com/-nYuzrImKyNo/Ugq4z7OdQKI/AAAAAAAAx6A/euHfSzs7qQg/s0/scissor.PNG" alt="Web Audio Supersaw Synthesizer" /><p class="caption">Web Audio Supersaw Synthesizer</p>
 </div>
-<p>If you’ve ever built a virtual synth before, you know that trying to reproduce the analog sound is really hard<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. It’s better to compete where digital has a comparative advantage, like spawning hundreds of oscillators dynamically. That’s the essence of the supersaw synth: stack a bunch of sawtooth oscillators on top of each other, each at a slightly different frequency.</p>
+<p>If you’ve ever built a virtual synth before, you know that trying to reproduce the analog sound is really hard<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. It’s better to compete where digital has a comparative advantage, like spawning hundreds of oscillators dynamically. That’s the essence of the supersaw synth: stack a bunch of sawtooth oscillators on top of each other, each at a slightly different frequency.</p>
 <p>Here’s <a href="../scissor/">the demo</a> and <a href="https://github.com/zacharydenton/scissor">the code</a>. There are only two knobs: one to control the number of oscillators; the other to control how out-of-tune each oscillator is. It’s simple, but it can make some cool sounds. Read on if you want to learn how to build your own.</p>
 <!--more-->
-
 <h2 id="overview">Overview</h2>
 <p>The supersaw sound first appeared in 1996 with the <a href="http://en.wikipedia.org/wiki/Roland_JP-8000#The_Supersaw">Roland JP-8000 synth</a>. The JP-8000’s supersaw waveform is comprised of 7 detuned saw waves. Later the <a href="http://en.wikipedia.org/wiki/Access_Virus">Access Virus TI</a> came out with the hypersaw: 9 detuned sawtooth oscillators. The synth we’re building today can do hundreds of detuned oscillators.</p>
 <p>We’ll build this synth in three stages. The first thing we’ll build is what I like to call the “audio circuit”: that is, the code that actually makes noise. Second, we’ll add a keyboard so we can play some notes, and finally, we’ll add a UI to make it look good (and a couple of knobs to tweak the sound).</p>
@@ -68,7 +67,7 @@
 <p>The conversion from MIDI note number to frequency looks like this:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">noteToFrequency <span class="kw">=</span> <span class="fu">(note) -&gt;</span>
   <span class="ot">Math</span><span class="kw">.</span>pow<span class="kw">(</span><span class="dv">2</span><span class="kw">,</span> <span class="kw">(</span>note <span class="kw">-</span> <span class="dv">69</span><span class="kw">)</span> <span class="kw">/</span> <span class="dv">12</span><span class="kw">)</span> <span class="kw">*</span> <span class="fl">440.0</span></code></pre>
-<p>What does this mean? Well, first of all, note number 69 corresponds to a frequency of 440 Hz (A4), since 2<sup>0/12</sup> * 440.0 = 440 Hz. After that, the notes follow a progression where each note is 2<sup>1/12</sup> higher frequency than the previous note<sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>. For example, note number 70 is 2<sup>1/12</sup> * 440.0 = 466.16 Hz.</p>
+<p>What does this mean? Well, first of all, note number 69 corresponds to a frequency of 440 Hz (A4), since 2<sup>0/12</sup> * 440.0 = 440 Hz. After that, the notes follow a progression where each note is 2<sup>1/12</sup> higher frequency than the previous note<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>. For example, note number 70 is 2<sup>1/12</sup> * 440.0 = 466.16 Hz.</p>
 <p>Once the voice has been created, it’s connected to the <code>@output</code> node, and instructed to start playing at <code>time</code> (if the <code>time</code> parameter isn’t specified, the voice starts immediately).</p>
 <p>Now we can write the <code>ScissorVoice</code> class.</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee"><span class="kw">class</span> <span class="dt">ScissorVoice</span>
@@ -147,7 +146,7 @@
 <span class="dv">@import</span> <span class="st">&quot;preboot.less&quot;</span><span class="dv">;</span>
 <span class="dv">@import</span> <span class="st">&quot;flexbox.less&quot;</span><span class="dv">;</span>
 
-@synth-color<span class="dv">:</span> <span class="fl">#737373</span>;
+@synth-color<span class="dv">:</span> #737373;
 @header-color<span class="dv">:</span> <span class="fl">#c30909</span>;</code></pre>
 <p>I decided to make the page background a radial gradient. Feel free to change this if you’d prefer something more subtle.</p>
 <pre class="sourceCode css"><code class="sourceCode css">html <span class="kw">{</span>
@@ -170,7 +169,7 @@ body <span class="kw">{</span>
   <span class="kw">border-radius:</span> @size-nano<span class="kw">;</span>
   <span class="er">.</span><span class="kw">box-shadow</span><span class="er">(0</span> <span class="er">0</span> <span class="er">@size-base</span> <span class="er">rgba(0,0,0,0.5));</span>
 <span class="er">}</span></code></pre>
-<p>There was a recent post about <a href="http://codepen.io/shshaw/full/gEiDt">absolute centering with CSS</a>. The modern way to do this is to use <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes">flexbox</a><sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. Here’s how to center the synth on the page with flexbox:</p>
+<p>There was a recent post about <a href="http://codepen.io/shshaw/full/gEiDt">absolute centering with CSS</a>. The modern way to do this is to use <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes">flexbox</a><a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. Here’s how to center the synth on the page with flexbox:</p>
 <pre class="sourceCode css"><code class="sourceCode css">body <span class="kw">{</span>
   <span class="er">.flex-display;</span>
   <span class="er">.align-items(center);</span>
@@ -267,7 +266,7 @@ body <span class="kw">{</span>
 <p>We’ll be using <a href="http://craig.is/killing/mice">Mousetrap</a> to handle key events:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">  bindKeys<span class="kw">:</span> <span class="fu">-&gt;</span>
     <span class="kw">for</span> letter<span class="kw">,</span> i <span class="kw">in</span> <span class="dt">@letters</span>
-      do <span class="fu">(letter, i) =&gt;</span>
+      <span class="kw">do</span> <span class="fu">(letter, i) =&gt;</span>
         Mousetrap<span class="kw">.</span>bind letter<span class="kw">,</span> <span class="kw">(</span><span class="fu">=&gt;</span>
           <span class="dt">@_noteOn</span> <span class="kw">(</span><span class="dt">@lowestNote</span> <span class="kw">+</span> i<span class="kw">)</span>
         <span class="kw">),</span> <span class="st">'keydown'</span>
@@ -395,7 +394,7 @@ body <span class="kw">{</span>
 </ol>
 </div>
   <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
   </p>
   <hr />
   <div id="disqus_thread"></div>
@@ -414,7 +413,7 @@ body <span class="kw">{</span>
 		<aside id="sidebar">
 <h2>Subscribe</h2>
 <ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
   <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
   <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
 </ul>
