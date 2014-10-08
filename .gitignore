@@ -1,4 +1,4 @@
-.cabal.sandbox.config
+cabal.sandbox.config
 .cabal-sandbox/
 bin/.cache
 bin/hakyll.hi

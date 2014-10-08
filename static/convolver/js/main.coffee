@@ -1,6 +1,6 @@
 @searchFreesound = (params, callback) ->
   $.ajax
-    url: "http://www.freesound.org/api/sounds/search?api_key=ec0c281cc7404d14b6f5216f96b8cd7c"
+    url: "//www.freesound.org/api/sounds/search?api_key=ec0c281cc7404d14b6f5216f96b8cd7c"
     data: params
     dataType: "jsonp"
     error: (e) ->
@@ -10,7 +10,7 @@
 
 @getFreesoundSample = (soundId, callback) ->
   $.ajax
-    url: "http://www.freesound.org/api/sounds/#{soundId}?api_key=ec0c281cc7404d14b6f5216f96b8cd7c"
+    url: "//www.freesound.org/api/sounds/#{soundId}?api_key=ec0c281cc7404d14b6f5216f96b8cd7c"
     dataType: "jsonp"
     error: (e) ->
       console.log(e)
