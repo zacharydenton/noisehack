@@ -5,14 +5,14 @@
       coffee: {
         compile: {
           files: {
-            'js/scissor.js': 'js/scissor.coffee'
+            'js/main.js': 'js/main.coffee'
           }
         }
       },
       less: {
         compile: {
           files: {
-            'css/scissor.css': 'css/scissor.less'
+            'css/main.css': 'css/main.less'
           }
         }
       },

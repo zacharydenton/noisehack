@@ -6,14 +6,14 @@
 		<meta name="description" content="Learn how to implement custom effects and filters with the Web Audio API.">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="canonical" href="http://noisehack.com/custom-audio-effects-javascript-web-audio-api/">
-		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link href="//fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="../css/main.css">
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="../js/main.js"></script>
 	</head>
 	<body>
 		<header role="banner">
-			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<h1><a href="../">Noisehack</a></h1>
 			<nav>
 			<ul>
 				<li><a href="../about/">About</a></li>
@@ -29,13 +29,13 @@
   <h1>Custom Audio Effects in JavaScript with the Web Audio API</h1>
   <p>You can get pretty far with the built-in Web Audio API nodes, but to really turn things up to 11, you may need to write custom audio effects in JavaScript. This post shows you how.</p>
 <!--more-->
-
 <p>To demonstrate the effects, we’ll be using the following reference tone throughout the post:</p>
 <pre style="display: none">var effect = audioContext.createGainNode();</pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Reference Tone
-</button></p>
-
+</button>
+</p>
 <h2 id="simple-lowpass-filter">Simple Lowpass Filter</h2>
 <p>Let’s get warmed up with a <a href="http://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter">simple lowpass filter</a>. This filter simply averages the current input sample with the previous output sample:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
@@ -52,10 +52,11 @@ Reference Tone
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Simple Lowpass
-</button></p>
-
+</button>
+</p>
 <p>I don’t know about you, but I could barely tell a difference between that and the reference tone. But take a look at how the effect is coded – this will serve as the basic template for all of the upcoming audio effects.</p>
 <p>The first thing to note is the buffer size. Set it too low, and you’ll get audio glitches known as <a href="http://en.wikipedia.org/wiki/Buffer_underrun">buffer underruns</a>. Set it too high, and you’ll introduce latency. Set it to 0, and the Web Audio API will pick a value for you.</p>
 <p>Now for the actual filter definition. I’ve wrapped it all in a closure to encapsulate the filter’s internal state (in this case, the previous output sample, <code>lastOut</code>). The <code>AudioNode</code> that actually performs the computation is the <code>ScriptProcessor</code>. To create a <code>ScriptProcessor</code>, use <code>audioContext.createScriptProcessor()</code>:</p>
@@ -91,10 +92,11 @@ Simple Lowpass
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Pinking Filter
-</button></p>
-
+</button>
+</p>
 <p>Qualitatively speaking, the filter smooths out the reference tone and makes it less “harsh” – kind of like the relationship between pink noise and white noise.</p>
 <p>If you look closely, this filter is using the same basic technique as the simple lowpass filter (averaging the last output sample with the current input sample). The only difference is that now there’s six simple lowpass filters, where previously there was only one. In other words, filter <code>b0</code> averages its last output sample (the previous value of <code>b0</code>) with the current input sample, <code>b1</code> averages its last output sample (the previous value of <code>b1</code>) with the current input sample, and so on. These six filters are then combined together with the appropriate weights to approximate a -3dB/octave filter, in aggregate.</p>
 <h2 id="noise-convolver">Noise Convolver</h2>
@@ -111,10 +113,11 @@ Pinking Filter
     <span class="ot">convolver</span>.<span class="fu">buffer</span> = noiseBuffer;
     <span class="kw">return</span> convolver;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Noise Convolver
-</button></p>
-
+</button>
+</p>
 <p>So what we’ve done here is create 0.5 seconds of stereophonic white noise and a <code>ConvolverNode</code> that uses it. You can create some really interesting effects with this technique: create a sound buffer with JavaScript, then use it to convolve an arbitrary input signal.</p>
 <p>If you don’t know much about convolution, that’s OK. I’ll be covering the <code>ConvolverNode</code> in depth in a future post. For now, I’ll just say that you can use it to emulate anything from the reverb of a massive cathedral hall to the tone of a <a href="http://www.amazon.com/dp/B002PYRHFU/?tag=zacden-20">Vox AC30</a>.</p>
 <h2 id="moog-filter">Moog Filter</h2>
@@ -147,10 +150,11 @@ Noise Convolver
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Moog Filter
-</button></p>
-
+</button>
+</p>
 <p>Notice the resonance. The caveat with this approach is that you can’t modulate <code>cutoff</code> and <code>frequency</code> the way you can with a normal <code>AudioParam</code>. I thought I could get around this by creating a dummy <code>BiquadFilter</code> and hijacking its <code>frequency</code> and <code>Q</code> parameters. Unfortunately, the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#computedValue-AudioParam-section"><code>computedValue</code> attribute referenced in the docs</a> doesn’t appear to be publicly accessible. If anyone knows a way around this, I’d be very interested to hear about it.</p>
 <h2 id="bitcrusher">Bitcrusher</h2>
 <p>Let’s take a look at one last effect: the lo-fi bitcrusher (<a href="http://www.musicdsp.org/showArchiveComment.php?ArchiveID=139">based on this code</a>):</p>
@@ -176,10 +180,11 @@ Moog Filter
     };
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Bitcrusher
-</button></p>
-
+</button>
+</p>
 <p>It works by quantizing the input signal. In other words, it samples the input signal every so often, then “holds” that sample until it’s time to sample again (based on the <code>bits</code> and <code>normfreq</code> settings).</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>Hopefully this will get you started implementing some crazy audio effects. There’s a whole <a href="http://musicdsp.org/">wild world of DSP algorithms</a> out there, just waiting to be implemented in JavaScript.</p>
@@ -187,7 +192,7 @@ Bitcrusher
 <p>As I was researching for this article, I noticed there’s not really any good central repository for DSP effects. With the Web Audio API, a <a href="http://glsl.heroku.com/">GLSL sandbox</a> for audio effects is suddenly possible. I think a central repository for open-source audio effects with in-browser previews would be really cool. If anyone is interested in building such a platform, <script type="text/javascript">
 <!--
 h='&#110;&#x6f;&#x69;&#x73;&#x65;&#104;&#x61;&#x63;&#x6b;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#122;&#x61;&#x63;&#104;';e=n+a+h;
-document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'">'+'let me know'+'<\/'+'a'+'>');
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+'let me know'+'<\/'+'a'+'>');
 // -->
 </script><noscript>let me know (zach at noisehack dot com)</noscript>.</p>
 <script>
@@ -239,13 +244,8 @@ $(function() {
     });
 });
 </script>
-
-
-
-
-
   <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
   </p>
   <hr />
   <div id="disqus_thread"></div>
@@ -264,18 +264,18 @@ $(function() {
 		<aside id="sidebar">
 <h2>Subscribe</h2>
 <ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
   <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
   <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
 </ul>
 <h2>Recent</h2>
 <ul class="recent">
   
-  <li><a href="../how-to-build-supersaw-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Supersaw Synthesizer with the Web Audio API</a></li>
-  
   <li><a href="../custom-audio-effects-javascript-web-audio-api/"><i class="icon-asterisk"></i> Custom Audio Effects in JavaScript with the Web Audio API</a></li>
   
   <li><a href="../how-to-build-monotron-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Monotron Synth with the Web Audio API</a></li>
+  
+  <li><a href="../generate-noise-web-audio-api/"><i class="icon-asterisk"></i> How to Generate Noise with the Web Audio API</a></li>
   
 </ul>
 </aside>

@@ -6,14 +6,14 @@
 		<meta name="description" content="Learn how to generate white noise, pink noise, and brown noise with the Web Audio API.">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="canonical" href="http://noisehack.com/generate-noise-web-audio-api/">
-		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link href="//fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="../css/main.css">
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="../js/main.js"></script>
 	</head>
 	<body>
 		<header role="banner">
-			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<h1><a href="../">Noisehack</a></h1>
 			<nav>
 			<ul>
 				<li><a href="../about/">About</a></li>
@@ -29,11 +29,10 @@
   <h1>How to Generate Noise with the Web Audio API</h1>
   <p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
 <!--more-->
-
 <p>If you want to skip to the good part, check out <a href="#demo">the demo</a>. Also, I’ve packaged all the noise generators into a small library called <a href="https://github.com/zacharydenton/noise.js">noise.js (available on GitHub)</a>.</p>
 <h2 id="white-noise">White Noise</h2>
 <p>The most common type of noise is <em>white noise</em>. White noise is perfectly random audio data with a flat frequency spectrum.</p>
-<p>To produce white noise, we simply compute a series of random samples<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
+<p>To produce white noise, we simply compute a series of random samples<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
 <span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
 <span class="ot">whiteNoise</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
@@ -160,7 +159,6 @@ $("#pink-demo").click(toggleDemo("Pink Noise", pinkGain));
 $("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
 </script>
 </p>
-
 <p>Just click on the buttons to turn the noise on and off.</p>
 <div class="footnotes">
 <hr />
@@ -169,7 +167,7 @@ $("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
 </ol>
 </div>
   <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
   </p>
   <hr />
   <div id="disqus_thread"></div>
@@ -188,18 +186,18 @@ $("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
 		<aside id="sidebar">
 <h2>Subscribe</h2>
 <ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
   <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
   <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
 </ul>
 <h2>Recent</h2>
 <ul class="recent">
   
-  <li><a href="../how-to-build-supersaw-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Supersaw Synthesizer with the Web Audio API</a></li>
-  
   <li><a href="../custom-audio-effects-javascript-web-audio-api/"><i class="icon-asterisk"></i> Custom Audio Effects in JavaScript with the Web Audio API</a></li>
   
   <li><a href="../how-to-build-monotron-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Monotron Synth with the Web Audio API</a></li>
+  
+  <li><a href="../generate-noise-web-audio-api/"><i class="icon-asterisk"></i> How to Generate Noise with the Web Audio API</a></li>
   
 </ul>
 </aside>

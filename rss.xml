@@ -8,382 +8,8 @@
         <name>Zach Denton</name>
         <email>z@chdenton.com</email>
     </author>
-    <updated>2013-08-24T00:00:00Z</updated>
+    <updated>2013-08-07T00:00:00Z</updated>
     <entry>
-    <title>How to Build a Supersaw Synthesizer with the Web Audio API</title>
-    <link href="http://noisehack.com/how-to-build-supersaw-synth-web-audio-api/" />
-    <id>http://noisehack.com/how-to-build-supersaw-synth-web-audio-api/</id>
-    <published>2013-08-24T00:00:00Z</published>
-    <updated>2013-08-24T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<div class="figure">
-<img src="https://lh3.googleusercontent.com/-nYuzrImKyNo/Ugq4z7OdQKI/AAAAAAAAx6A/euHfSzs7qQg/s0/scissor.PNG" alt="Web Audio Supersaw Synthesizer" /><p class="caption">Web Audio Supersaw Synthesizer</p>
-</div>
-<p>If you’ve ever built a virtual synth before, you know that trying to reproduce the analog sound is really hard<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. It’s better to compete where digital has a comparative advantage, like spawning hundreds of oscillators dynamically. That’s the essence of the supersaw synth: stack a bunch of sawtooth oscillators on top of each other, each at a slightly different frequency.</p>
-<p>Here’s <a href="/scissor/">the demo</a> and <a href="https://github.com/zacharydenton/scissor">the code</a>. There are only two knobs: one to control the number of oscillators; the other to control how out-of-tune each oscillator is. It’s simple, but it can make some cool sounds. Read on if you want to learn how to build your own.</p>
-<!--more-->
-
-<h2 id="overview">Overview</h2>
-<p>The supersaw sound first appeared in 1996 with the <a href="http://en.wikipedia.org/wiki/Roland_JP-8000#The_Supersaw">Roland JP-8000 synth</a>. The JP-8000’s supersaw waveform is comprised of 7 detuned saw waves. Later the <a href="http://en.wikipedia.org/wiki/Access_Virus">Access Virus TI</a> came out with the hypersaw: 9 detuned sawtooth oscillators. The synth we’re building today can do hundreds of detuned oscillators.</p>
-<p>We’ll build this synth in three stages. The first thing we’ll build is what I like to call the “audio circuit”: that is, the code that actually makes noise. Second, we’ll add a keyboard so we can play some notes, and finally, we’ll add a UI to make it look good (and a couple of knobs to tweak the sound).</p>
-<h2 id="audio-circuit">Audio Circuit</h2>
-<p>We’re going to make this synthesizer polyphonic, meaning that multiple notes can be played simultaneously (i.e., chords). The way I like to implement this is to have a low-level class with the audio code needed for a single note (“voice”), and a high-level class responsible for managing these voices.</p>
-<p>Let’s start with the high-level class.</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee"><span class="kw">class</span> <span class="dt">Scissor</span>
-  <span class="kw">constructor:</span> <span class="fu">(@context) -&gt;</span>
-    <span class="dt">@numSaws</span> <span class="kw">=</span> <span class="dv">3</span>
-    <span class="dt">@detune</span> <span class="kw">=</span> <span class="dv">12</span>
-    <span class="dt">@voices</span> <span class="kw">=</span> <span class="kw">[]</span>
-    <span class="dt">@output</span> <span class="kw">=</span> <span class="dt">@context</span><span class="kw">.</span>createGain<span class="kw">()</span>
-
-  noteOn<span class="kw">:</span> <span class="fu">(note, time) -&gt;</span>
-    <span class="kw">return</span> <span class="kw">if</span> <span class="dt">@voices</span><span class="kw">[</span>note<span class="kw">]?</span>
-    time <span class="kw">?=</span> <span class="dt">@context</span><span class="kw">.</span>currentTime
-    freq <span class="kw">=</span> noteToFrequency note
-    voice <span class="kw">=</span> <span class="kw">new</span> <span class="dt">ScissorVoice</span><span class="kw">(</span><span class="dt">@context</span><span class="kw">,</span> freq<span class="kw">,</span> <span class="dt">@numSaws</span><span class="kw">,</span> <span class="dt">@detune</span><span class="kw">)</span>
-    voice<span class="kw">.</span>connect <span class="dt">@output</span>
-    voice<span class="kw">.</span>start time
-    <span class="dt">@voices</span><span class="kw">[</span>note<span class="kw">]</span> <span class="kw">=</span> voice
-
-  noteOff<span class="kw">:</span> <span class="fu">(note, time) -&gt;</span>
-    <span class="kw">return</span> <span class="kw">unless</span> <span class="dt">@voices</span><span class="kw">[</span>note<span class="kw">]?</span>
-    time <span class="kw">?=</span> <span class="dt">@context</span><span class="kw">.</span>currentTime
-    <span class="dt">@voices</span><span class="kw">[</span>note<span class="kw">].</span>stop time
-    <span class="kw">delete</span> <span class="dt">@voices</span><span class="kw">[</span>note<span class="kw">]</span>
-
-  connect<span class="kw">:</span> <span class="fu">(target) -&gt;</span>
-    <span class="dt">@output</span><span class="kw">.</span>connect target</code></pre>
-<p>This is the high-level “synth object”, responsible for handling <code>noteOn</code> and <code>noteOff</code> messages. The way it does this is to keep track of a <code>@voices</code> array. When a <code>noteOn</code> message is received, it converts the <code>note</code> parameter (<a href="http://www.phys.unsw.edu.au/jw/notes.html">the MIDI note number</a>) to a frequency, then constructs a <code>ScissorVoice</code> object with the appropriate parameters. It stores a reference to this new voice in the <code>@voices</code> array, so it can be used later when the <code>noteOff</code> method is called.</p>
-<p>The conversion from MIDI note number to frequency looks like this:</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee">noteToFrequency <span class="kw">=</span> <span class="fu">(note) -&gt;</span>
-  <span class="ot">Math</span><span class="kw">.</span>pow<span class="kw">(</span><span class="dv">2</span><span class="kw">,</span> <span class="kw">(</span>note <span class="kw">-</span> <span class="dv">69</span><span class="kw">)</span> <span class="kw">/</span> <span class="dv">12</span><span class="kw">)</span> <span class="kw">*</span> <span class="fl">440.0</span></code></pre>
-<p>What does this mean? Well, first of all, note number 69 corresponds to a frequency of 440 Hz (A4), since 2<sup>0/12</sup> * 440.0 = 440 Hz. After that, the notes follow a progression where each note is 2<sup>1/12</sup> higher frequency than the previous note<sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>. For example, note number 70 is 2<sup>1/12</sup> * 440.0 = 466.16 Hz.</p>
-<p>Once the voice has been created, it’s connected to the <code>@output</code> node, and instructed to start playing at <code>time</code> (if the <code>time</code> parameter isn’t specified, the voice starts immediately).</p>
-<p>Now we can write the <code>ScissorVoice</code> class.</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee"><span class="kw">class</span> <span class="dt">ScissorVoice</span>
-  <span class="kw">constructor:</span> <span class="fu">(@context, @frequency, @numSaws, @detune) -&gt;</span>
-    <span class="dt">@output</span> <span class="kw">=</span> <span class="dt">@context</span><span class="kw">.</span>createGain<span class="kw">()</span>
-    <span class="dt">@maxGain</span> <span class="kw">=</span> <span class="dv">1</span> <span class="kw">/</span> <span class="dt">@numSaws</span>
-    <span class="dt">@saws</span> <span class="kw">=</span> <span class="kw">[]</span>
-    <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">[</span><span class="dv">0</span><span class="kw">...</span><span class="dt">@numSaws</span><span class="kw">]</span>
-      saw <span class="kw">=</span> <span class="dt">@context</span><span class="kw">.</span>createOscillator<span class="kw">()</span>
-      saw<span class="kw">.</span>type <span class="kw">=</span> saw<span class="kw">.</span>SAWTOOTH
-      saw<span class="kw">.</span>frequency<span class="kw">.</span>value <span class="kw">=</span> <span class="dt">@frequency</span>
-      saw<span class="kw">.</span>detune<span class="kw">.</span>value <span class="kw">=</span> <span class="kw">-</span><span class="dt">@detune</span> <span class="kw">+</span> i <span class="kw">*</span> <span class="dv">2</span> <span class="kw">*</span> <span class="dt">@detune</span> <span class="kw">/</span> <span class="kw">(</span><span class="dt">@numSaws</span> <span class="kw">-</span> <span class="dv">1</span><span class="kw">)</span>
-      saw<span class="kw">.</span>start <span class="dt">@context</span><span class="kw">.</span>currentTime
-      saw<span class="kw">.</span>connect <span class="dt">@output</span>
-      <span class="dt">@saws</span><span class="kw">.</span>push saw
-
-  start<span class="kw">:</span> <span class="fu">(time) -&gt;</span>
-    <span class="dt">@output</span><span class="kw">.</span>gain<span class="kw">.</span>setValueAtTime <span class="dt">@maxGain</span><span class="kw">,</span> time
-
-  stop<span class="kw">:</span> <span class="fu">(time) -&gt;</span>
-    <span class="dt">@output</span><span class="kw">.</span>gain<span class="kw">.</span>setValueAtTime <span class="dv">0</span><span class="kw">,</span> time
-    <span class="ot">setTimeout</span> <span class="kw">(</span><span class="fu">=&gt;</span>
-      <span class="co"># remove old saws</span>
-      <span class="dt">@saws</span><span class="kw">.</span>forEach <span class="fu">(saw) -&gt;</span>
-        saw<span class="kw">.</span>disconnect<span class="kw">()</span>
-    <span class="kw">),</span> <span class="ot">Math</span><span class="kw">.</span>floor<span class="kw">((</span>time <span class="kw">-</span> <span class="dt">@context</span><span class="kw">.</span>currentTime<span class="kw">)</span> <span class="kw">*</span> <span class="dv">1000</span><span class="kw">)</span>
-
-  connect<span class="kw">:</span> <span class="fu">(target) -&gt;</span>
-    <span class="dt">@output</span><span class="kw">.</span>connect target</code></pre>
-<p>As you can see, the class creates <code>@numSaws</code> sawtooth oscillators, with the <code>detune</code> parameter spread from <code>-@detune</code> to <code>@detune</code>.</p>
-<p>The <code>start</code> method just sets the <code>@output</code> gain to <code>@maxGain</code>. <code>@maxGain</code> is set to <code>1 / @numSaws</code>, to keep the audio output in the range [-1.0, 1.0]. When the <code>stop</code> method is called, the <code>@output</code> gain is set to 0, and the oscillators are disconnected from the audio graph. The garbage collector will eventually remove these disconnected nodes, which saves CPU cycles.</p>
-<p>At this point, you can test it out in the console:</p>
-<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> audioContext = <span class="kw">new</span> <span class="fu">webkitAudioContext</span>();
-<span class="kw">var</span> scissor = <span class="kw">new</span> <span class="fu">Scissor</span>();
-<span class="ot">scissor</span>.<span class="fu">connect</span>(<span class="ot">audioContext</span>.<span class="fu">destination</span>);
-<span class="ot">scissor</span>.<span class="fu">noteOn</span>(<span class="dv">60</span>); <span class="co">// C4</span>
-<span class="ot">scissor</span>.<span class="fu">noteOn</span>(<span class="dv">64</span>); <span class="co">// E4</span>
-<span class="ot">scissor</span>.<span class="fu">noteOn</span>(<span class="dv">67</span>); <span class="co">// G4</span></code></pre>
-<h2 id="user-interface">User Interface</h2>
-<p>We’ll be building the interface with LESS. The first thing I like to do when starting a new design is to define some additional LESS variables:</p>
-<pre class="sourceCode css"><code class="sourceCode css">@phi<span class="dv">:</span>          1<span class="fl">.61803399</span>;
-@size-nano<span class="dv">:</span>    unit(pow(@phi, -4), rem);
-@size-micro<span class="dv">:</span>   unit(pow(@phi, -3), rem);
-@size-tiny<span class="dv">:</span>    unit(pow(@phi, -2), rem);
-@size-small<span class="dv">:</span>   unit(pow(@phi, -1), rem);
-@size-base<span class="dv">:</span>    unit(pow(@phi,  0), rem);
-@size-large<span class="dv">:</span>   unit(pow(@phi,  1), rem);
-@size-huge<span class="dv">:</span>    unit(pow(@phi,  2), rem);
-@size-massive<span class="dv">:</span> unit(pow(@phi,  3), rem);
-@size-epic<span class="dv">:</span>    unit(pow(@phi,  4), rem);</code></pre>
-<p>This is probably a bit strange if you haven’t seen anything like this before. It’s called a <a href="http://alistapart.com/article/more-meaningful-typography">modular scale</a>. Whenever I need a measurement in the design, be it font size, margin, border size, or anything else, I only use measurements from the scale. It keeps things visually consistent and means I don’t have to worry about whether the spacing should be 3px or 4px.</p>
-<p>Here’s the markup we’ll use for the synth UI:</p>
-<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;scissor&quot;</span><span class="kw">&gt;</span>
-  <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;controls&quot;</span><span class="kw">&gt;</span>
-    <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;panel&quot;</span><span class="kw">&gt;</span>
-      <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;knob&quot;</span><span class="kw">&gt;</span>
-        <span class="kw">&lt;input</span><span class="ot"> id=</span><span class="st">&quot;saws&quot;</span><span class="ot"> type=</span><span class="st">&quot;range&quot;</span><span class="ot"> min=</span><span class="st">&quot;1&quot;</span><span class="ot"> max=</span><span class="st">&quot;15&quot;</span><span class="ot"> data-width=</span><span class="st">&quot;62&quot;</span><span class="ot"> data-height=</span><span class="st">&quot;62&quot;</span><span class="ot"> data-angleOffset=</span><span class="st">&quot;220&quot;</span><span class="ot"> data-angleRange=</span><span class="st">&quot;280&quot;</span> <span class="kw">/&gt;</span>
-        <span class="kw">&lt;label&gt;</span>Num. Saws<span class="kw">&lt;/label&gt;</span>
-      <span class="kw">&lt;/div&gt;</span>
-    <span class="kw">&lt;/div&gt;</span>
-    <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;title panel&quot;</span><span class="kw">&gt;</span>
-      <span class="kw">&lt;h1&gt;&lt;a</span><span class="ot"> href=</span><span class="st">&quot;http://noisehack.com/&quot;</span><span class="kw">&gt;</span>Scissor<span class="kw">&lt;/a&gt;&lt;/h1&gt;</span>
-      <span class="kw">&lt;p&gt;</span>Web Audio Supersaw Synthesizer<span class="kw">&lt;/p&gt;</span>
-    <span class="kw">&lt;/div&gt;</span>
-    <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;panel&quot;</span><span class="kw">&gt;</span>
-      <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;knob&quot;</span><span class="kw">&gt;</span>
-        <span class="kw">&lt;input</span><span class="ot"> id=</span><span class="st">&quot;detune&quot;</span><span class="ot"> type=</span><span class="st">&quot;range&quot;</span><span class="ot"> min=</span><span class="st">&quot;0&quot;</span><span class="ot"> max=</span><span class="st">&quot;100&quot;</span><span class="ot"> data-width=</span><span class="st">&quot;62&quot;</span><span class="ot"> data-height=</span><span class="st">&quot;62&quot;</span><span class="ot"> data-angleOffset=</span><span class="st">&quot;220&quot;</span><span class="ot"> data-angleRange=</span><span class="st">&quot;280&quot;</span> <span class="kw">/&gt;</span>
-        <span class="kw">&lt;label&gt;</span>Detune<span class="kw">&lt;/label&gt;</span>
-      <span class="kw">&lt;/div&gt;</span>
-    <span class="kw">&lt;/div&gt;</span>
-  <span class="kw">&lt;/div&gt;</span>
-  <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;keyboard&quot;</span><span class="kw">&gt;&lt;/div&gt;</span>
-<span class="kw">&lt;/div&gt;</span></code></pre>
-<p>To get started on the CSS, we’ll first import <a href="http://necolas.github.io/normalize.css/">normalize.css</a>, <a href="http://getpreboot.com/">Preboot</a>, and these <a href="https://gist.github.com/jayj/4012969">flexbox mixins</a>. If you haven’t heard of it, Preboot is basically “Bootstrap: The Good Parts”. It has all the Bootstrap LESS mixins and variables, without actually styling anything. If you tend to override the default Bootstrap styles, I recommend giving Preboot a try.</p>
-<pre class="sourceCode css"><code class="sourceCode css"><span class="dv">@import</span> <span class="st">&quot;normalize.less&quot;</span><span class="dv">;</span>
-<span class="dv">@import</span> <span class="st">&quot;preboot.less&quot;</span><span class="dv">;</span>
-<span class="dv">@import</span> <span class="st">&quot;flexbox.less&quot;</span><span class="dv">;</span>
-
-@synth-color<span class="dv">:</span> <span class="fl">#737373</span>;
-@header-color<span class="dv">:</span> <span class="fl">#c30909</span>;</code></pre>
-<p>I decided to make the page background a radial gradient. Feel free to change this if you’d prefer something more subtle.</p>
-<pre class="sourceCode css"><code class="sourceCode css">html <span class="kw">{</span>
-  <span class="kw">width:</span> <span class="dt">100%</span><span class="kw">;</span>
-  <span class="kw">height:</span> <span class="dt">100%</span><span class="kw">;</span>
-<span class="kw">}</span>
-
-body <span class="kw">{</span>
-  <span class="kw">width:</span> <span class="dt">100%</span><span class="kw">;</span>
-  <span class="kw">height:</span> <span class="dt">100%</span><span class="kw">;</span>
-  <span class="kw">font-family:</span> @font-family-base<span class="kw">;</span>
-  <span class="er">#gradient.radial(@header-color,</span> <span class="er">darken(@header-color,</span> <span class="er">34%));</span>
-  <span class="er">.user-select(none);</span>
-<span class="kw">}</span></code></pre>
-<p>To style the main body of the synth, use:</p>
-<pre class="sourceCode css"><code class="sourceCode css"><span class="fl">#scissor</span> <span class="kw">{</span>
-  <span class="er">#gradient.vertical(lighten(@synth-color,</span> <span class="er">30%),</span> <span class="er">@synth-color);</span>
-  <span class="kw">padding-left:</span> @size-micro<span class="kw">;</span>
-  <span class="kw">padding-right:</span> @size-micro<span class="kw">;</span>
-  <span class="kw">border-radius:</span> @size-nano<span class="kw">;</span>
-  <span class="er">.</span><span class="kw">box-shadow</span><span class="er">(0</span> <span class="er">0</span> <span class="er">@size-base</span> <span class="er">rgba(0,0,0,0.5));</span>
-<span class="er">}</span></code></pre>
-<p>There was a recent post about <a href="http://codepen.io/shshaw/full/gEiDt">absolute centering with CSS</a>. The modern way to do this is to use <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes">flexbox</a><sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. Here’s how to center the synth on the page with flexbox:</p>
-<pre class="sourceCode css"><code class="sourceCode css">body <span class="kw">{</span>
-  <span class="er">.flex-display;</span>
-  <span class="er">.align-items(center);</span>
-  <span class="er">.justify-content(center);</span>
-<span class="kw">}</span></code></pre>
-<p>No need to manually specify heights or widths—flexbox adapts to you, not the other way around.</p>
-<p>Here’s the CSS for the <code>#controls</code> div:</p>
-<pre class="sourceCode css"><code class="sourceCode css"><span class="fl">#controls</span> <span class="kw">{</span>
-  <span class="kw">padding:</span> @size-base<span class="kw">;</span>
-  <span class="kw">margin-top:</span> @size-small<span class="kw">;</span>
-  <span class="er">.border-top-radius(@size-nano);</span>
-  <span class="er">.</span><span class="kw">box-sizing</span><span class="er">(border-box);</span>
-  <span class="er">.flex-display;</span>
-
-  <span class="er">.panel</span> <span class="er">{</span>
-    <span class="er">.flex(1);</span>
-    <span class="er">.justify-content(center);</span>
-    <span class="er">.align-items(center);</span>
-    <span class="er">text-align</span><span class="kw">:</span> <span class="dt">center</span><span class="kw">;</span>
-
-    <span class="er">.knob</span> <span class="er">{</span>
-      <span class="er">div</span> <span class="er">{</span>
-        <span class="kw">text-align:</span> <span class="dt">center</span><span class="kw">;</span>
-        <span class="kw">width:</span> <span class="dt">100%</span> <span class="kw">!important;</span>
-      <span class="kw">}</span>
-
-      label <span class="kw">{</span>
-        <span class="kw">margin:</span> <span class="dt">0</span><span class="kw">;</span>
-        <span class="kw">padding:</span> <span class="dt">0</span><span class="kw">;</span>
-        <span class="kw">text-transform:</span> <span class="dt">uppercase</span><span class="kw">;</span>
-        <span class="kw">font-weight:</span> <span class="dt">700</span><span class="kw">;</span>
-        <span class="kw">color:</span> darken(@synth-color, <span class="dt">5%</span>)<span class="kw">;</span>
-        <span class="kw">text-shadow:</span> <span class="dt">0</span> <span class="dt">1px</span> <span class="dt">0</span> lighten(@synth-color, <span class="dt">40%</span>)<span class="kw">;</span>
-      <span class="kw">}</span>
-    }
-
-    &amp;<span class="fl">.title</span> <span class="kw">{</span>
-      <span class="er">.flex(2);</span>
-      <span class="er">.flex-display;</span>
-      <span class="er">.flex-direction(column);</span>
-
-      <span class="er">h1</span> <span class="er">{</span>
-        <span class="kw">margin:</span> <span class="dt">0</span><span class="kw">;</span>
-        <span class="kw">padding:</span> <span class="dt">0</span><span class="kw">;</span>
-
-        <span class="er">a</span> <span class="er">{</span>
-          <span class="kw">color:</span> @header-color<span class="kw">;</span>
-          <span class="kw">text-shadow:</span> <span class="dt">0</span> <span class="dt">1px</span> <span class="dt">0</span> lighten(@synth-color, <span class="dt">40%</span>)<span class="kw">;</span>
-          <span class="kw">font-size:</span> @size-huge<span class="kw">;</span>
-          <span class="kw">line-height:</span> <span class="dt">1</span><span class="kw">;</span>
-          <span class="kw">font-family:</span> <span class="st">&quot;Stalinist One&quot;</span>, <span class="dt">sans-serif</span><span class="kw">;</span>
-          <span class="kw">font-weight:</span> <span class="dt">400</span><span class="kw">;</span>
-          <span class="kw">text-transform:</span> <span class="dt">uppercase</span><span class="kw">;</span>
-          <span class="kw">text-decoration:</span> <span class="dt">none</span><span class="kw">;</span>
-        <span class="kw">}</span>
-      }
-
-      p <span class="kw">{</span>
-        <span class="kw">margin:</span> <span class="dt">0</span><span class="kw">;</span>
-        <span class="kw">padding:</span> <span class="dt">0</span><span class="kw">;</span>
-        <span class="kw">text-transform:</span> <span class="dt">uppercase</span><span class="kw">;</span>
-        <span class="kw">font-weight:</span> <span class="dt">700</span><span class="kw">;</span>
-        <span class="kw">color:</span> darken(@synth-color, <span class="dt">5%</span>)<span class="kw">;</span>
-        <span class="kw">text-shadow:</span> <span class="dt">0</span> <span class="dt">1px</span> <span class="dt">0</span> lighten(@synth-color, <span class="dt">40%</span>)<span class="kw">;</span>
-      <span class="kw">}</span>
-    }
-  }
-}</code></pre>
-<p>There are a few interesting things going on here. The text gets a 1px <code>text-shadow</code> to make it look like it’s engraved into the surface of the synth. Also notice the <code>.flex(2);</code> directive in the <code>.panel.title</code> CSS. That means it will take up two columns, while the other <code>.panel</code> divs take up only one.</p>
-<h2 id="keyboard">Keyboard</h2>
-<p>We have the audio circuit and the synth control panel; now we need a keyboard. I’m putting all the functionality into a single <code>VirtualKeyboard</code> class. Instead of hard-coding functionality, it will accept callbacks for <code>noteOn</code> and <code>noteOff</code> events, so that it can be used with any instrument, not just the synth we’re building today.</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee"><span class="kw">class</span> <span class="dt">VirtualKeyboard</span>
-  <span class="kw">constructor:</span> <span class="fu">(@$el, params) -&gt;</span>
-    <span class="dt">@lowestNote</span> <span class="kw">=</span> params<span class="kw">.</span>lowestNote <span class="kw">?</span> <span class="dv">48</span>
-    <span class="dt">@letters</span> <span class="kw">=</span> params<span class="kw">.</span>letters <span class="kw">?</span> <span class="st">&quot;awsedftgyhujkolp;&#39;&quot;</span><span class="kw">.</span>split <span class="st">&#39;&#39;</span>
-    <span class="dt">@noteOn</span> <span class="kw">=</span> params<span class="kw">.</span>noteOn <span class="kw">?</span> <span class="fu">(note) -&gt;</span> <span class="ot">console</span><span class="kw">.</span>log <span class="st">&quot;noteOn: </span><span class="ch">#{</span>note<span class="ch">}</span><span class="st">&quot;</span>
-    <span class="dt">@noteOff</span> <span class="kw">=</span> params<span class="kw">.</span>noteOff <span class="kw">?</span> <span class="fu">(note) -&gt;</span> <span class="ot">console</span><span class="kw">.</span>log <span class="st">&quot;noteOff: </span><span class="ch">#{</span>note<span class="ch">}</span><span class="st">&quot;</span>
-    <span class="dt">@keysPressed</span> <span class="kw">=</span> <span class="kw">{}</span>
-    <span class="dt">@render</span><span class="kw">()</span>
-    <span class="dt">@bindKeys</span><span class="kw">()</span>
-    <span class="dt">@bindMouse</span><span class="kw">()</span>
-
-  _noteOn<span class="kw">:</span> <span class="fu">(note) -&gt;</span>
-    <span class="kw">return</span> <span class="kw">if</span> note <span class="kw">of</span> <span class="dt">@keysPressed</span>
-    $<span class="kw">(</span><span class="dt">@$el</span><span class="kw">.</span>find<span class="kw">(</span><span class="st">&#39;li&#39;</span><span class="kw">).</span>get<span class="kw">(</span>note <span class="kw">-</span> <span class="dt">@lowestNote</span><span class="kw">)).</span>addClass <span class="st">&#39;active&#39;</span>
-    <span class="dt">@keysPressed</span><span class="kw">[</span>note<span class="kw">]</span> <span class="kw">=</span> <span class="ot">true</span>
-    <span class="dt">@noteOn</span> note
-
-  _noteOff<span class="kw">:</span> <span class="fu">(note) -&gt;</span>
-    <span class="kw">return</span> <span class="kw">unless</span> note <span class="kw">of</span> <span class="dt">@keysPressed</span>
-    $<span class="kw">(</span><span class="dt">@$el</span><span class="kw">.</span>find<span class="kw">(</span><span class="st">&#39;li&#39;</span><span class="kw">).</span>get<span class="kw">(</span>note <span class="kw">-</span> <span class="dt">@lowestNote</span><span class="kw">)).</span>removeClass <span class="st">&#39;active&#39;</span>
-    <span class="kw">delete</span> <span class="dt">@keysPressed</span><span class="kw">[</span>note<span class="kw">]</span>
-    <span class="dt">@noteOff</span> note</code></pre>
-<p>We’ll be using <a href="http://craig.is/killing/mice">Mousetrap</a> to handle key events:</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee">  bindKeys<span class="kw">:</span> <span class="fu">-&gt;</span>
-    <span class="kw">for</span> letter<span class="kw">,</span> i <span class="kw">in</span> <span class="dt">@letters</span>
-      do <span class="fu">(letter, i) =&gt;</span>
-        Mousetrap<span class="kw">.</span>bind letter<span class="kw">,</span> <span class="kw">(</span><span class="fu">=&gt;</span>
-          <span class="dt">@_noteOn</span> <span class="kw">(</span><span class="dt">@lowestNote</span> <span class="kw">+</span> i<span class="kw">)</span>
-        <span class="kw">),</span> <span class="st">&#39;keydown&#39;</span>
-        Mousetrap<span class="kw">.</span>bind letter<span class="kw">,</span> <span class="kw">(</span><span class="fu">=&gt;</span>
-          <span class="dt">@_noteOff</span> <span class="kw">(</span><span class="dt">@lowestNote</span> <span class="kw">+</span> i<span class="kw">)</span>
-        <span class="kw">),</span> <span class="st">&#39;keyup&#39;</span>
-
-    Mousetrap<span class="kw">.</span>bind <span class="st">&#39;z&#39;</span><span class="kw">,</span> <span class="fu">=&gt;</span>
-      <span class="co"># shift one octave down</span>
-      <span class="dt">@lowestNote</span> <span class="kw">-=</span> <span class="dv">12</span>
-  
-    Mousetrap<span class="kw">.</span>bind <span class="st">&#39;x&#39;</span><span class="kw">,</span> <span class="fu">=&gt;</span>
-      <span class="co"># shift one octave up</span>
-      <span class="dt">@lowestNote</span> <span class="kw">+=</span> <span class="dv">12</span></code></pre>
-<p>Note that pressing <kbd>z</kbd> shifts down an octave and pressing <kbd>x</kbd> shifts up an octave. This works in the demo, too—if you have a good sound system, try playing some basslines!</p>
-<p>We also want the keys to respond if the user clicks on them:</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee">  bindMouse<span class="kw">:</span> <span class="fu">-&gt;</span>
-    <span class="dt">@$el</span><span class="kw">.</span>find<span class="kw">(</span><span class="st">&#39;li&#39;</span><span class="kw">).</span>each <span class="fu">(i, key) =&gt;</span>
-      $<span class="kw">(</span>key<span class="kw">).</span>mousedown <span class="fu">=&gt;</span>
-        <span class="dt">@_noteOn</span> <span class="kw">(</span><span class="dt">@lowestNote</span> <span class="kw">+</span> i<span class="kw">)</span>
-      $<span class="kw">(</span>key<span class="kw">).</span>mouseup <span class="fu">=&gt;</span>
-        <span class="dt">@_noteOff</span> <span class="kw">(</span><span class="dt">@lowestNote</span> <span class="kw">+</span> i<span class="kw">)</span></code></pre>
-<p>Once that’s done, we want to add the CSS. I decided to go for a design that looks like a cross between a computer keyboard and a piano keyboard, similar to the one in Garageband:</p>
-<pre class="sourceCode css"><code class="sourceCode css">@white-key<span class="dv">:</span> rgb(236, 236, 236);
-@black-key<span class="dv">:</span> rgb(70, 70, 70);
-
-<span class="fl">.piano-key</span>(@color) <span class="kw">{</span>
-  <span class="kw">background-color:</span> @color<span class="kw">;</span>
-  <span class="kw">color:</span> darken(@color, <span class="dt">30%</span>)<span class="kw">;</span>
-  <span class="kw">text-shadow:</span> <span class="dt">0</span> <span class="dt">1px</span> <span class="dt">0</span> lighten(@color, <span class="dt">10%</span>)<span class="kw">;</span>
-  <span class="kw">border-top:</span> @size-nano <span class="dt">solid</span> darken(@color, <span class="dt">10%</span>)<span class="kw">;</span>
-  <span class="kw">border-left:</span> @size-tiny <span class="dt">solid</span> darken(@color, <span class="dt">15%</span>)<span class="kw">;</span>
-  <span class="kw">border-right:</span> @size-tiny <span class="dt">solid</span> darken(@color, <span class="dt">15%</span>)<span class="kw">;</span>
-  <span class="kw">border-bottom:</span> @size-micro <span class="dt">solid</span> darken(@color, <span class="dt">25%</span>)<span class="kw">;</span>
-  <span class="er">.</span><span class="kw">box-shadow</span><span class="er">(0</span> <span class="er">@size-micro</span> <span class="er">@size-small</span> <span class="er">rgba(0,0,0,0.5));</span>
-
-  <span class="er">&amp;.active</span> <span class="er">{</span>
-    <span class="er">.box-shadow(0</span> <span class="er">@size-nano</span> <span class="er">@size-micro</span> <span class="er">rgba(0,0,0,0.5));</span>
-    <span class="er">text-shadow</span><span class="kw">:</span> <span class="dt">0</span> <span class="dt">1px</span> <span class="dt">0</span> @color<span class="kw">;</span>
-    <span class="er">#gradient.vertical(@color,</span> <span class="er">darken(@color,</span> <span class="er">10%));</span>
-  <span class="kw">}</span>
-}
-
-<span class="fl">#keyboard</span> <span class="kw">{</span>
-  <span class="kw">cursor:</span> <span class="dt">pointer</span><span class="kw">;</span>
-
-  <span class="er">ul</span> <span class="er">{</span>
-    <span class="kw">margin:</span> <span class="dt">0</span> <span class="dt">auto</span><span class="kw">;</span>
-    <span class="kw">padding:</span> <span class="dt">0</span><span class="kw">;</span>
-    <span class="kw">list-style:</span> <span class="dt">none</span><span class="kw">;</span>
-
-    <span class="er">li</span> <span class="er">{</span>
-      <span class="kw">float:</span> <span class="dt">left</span><span class="kw">;</span>
-      <span class="kw">width:</span> @size-massive<span class="kw">;</span>
-      <span class="kw">height:</span> @size-epic<span class="kw">;</span>
-      <span class="kw">text-transform:</span> <span class="dt">uppercase</span><span class="kw">;</span>
-      <span class="kw">font-style:</span> <span class="dt">italic</span><span class="kw">;</span>
-      <span class="kw">padding-left:</span> @size-tiny<span class="kw">;</span>
-      <span class="kw">padding-bottom:</span> @size-micro<span class="kw">;</span>
-      <span class="kw">margin-right:</span> @size-nano<span class="kw">;</span>
-      <span class="er">.</span><span class="kw">box-sizing</span><span class="er">(border-box);</span>
-      <span class="er">.flex-display;</span>
-      <span class="er">.align-items(flex-end);</span>
-      <span class="er">.border-bottom-radius(@size-micro);</span>
-      <span class="er">.piano-key(@white-key);</span>
-
-      <span class="er">&amp;.accidental</span> <span class="er">{</span>
-        <span class="er">position</span><span class="kw">:</span> <span class="dt">relative</span><span class="kw">;</span>
-        <span class="kw">margin-left:</span> -@size-large<span class="kw">;</span>
-        <span class="kw">margin-right:</span> -(@size-large + (@size-massive / <span class="dt">2</span>))<span class="kw">;</span>
-        <span class="kw">height:</span> @size-massive<span class="kw">;</span>
-        <span class="er">.piano-key(@black-key);</span>
-      <span class="kw">}</span>
-
-      &amp;<span class="dv">:last-child</span> <span class="kw">{</span>
-        <span class="kw">margin-right:</span> <span class="dt">0</span><span class="kw">;</span>
-      <span class="kw">}</span>
-    }
-  }
-}</code></pre>
-<p>The white and black keys have a lot of CSS in common, so I made a <code>.piano-key</code> mixin to reduce repetition. This also means it’s easy to change the keyboard color; just change the values of <code>@white-key</code> and <code>@black-key</code>.</p>
-<h2 id="putting-it-together">Putting It Together</h2>
-<p>That’s it for the individual components; now it’s time to instantiate and connect them to create the finished synth:</p>
-<pre class="sourceCode coffee"><code class="sourceCode coffee">$ <span class="fu">-&gt;</span>
-  audioContext <span class="kw">=</span> <span class="kw">new</span> (<span class="dt">AudioContext</span> <span class="kw">?</span> webkitAudioContext<span class="kw">)</span>
-  masterGain <span class="kw">=</span> audioContext<span class="kw">.</span>createGain<span class="kw">()</span>
-  masterGain<span class="kw">.</span>gain<span class="kw">.</span>value <span class="kw">=</span> <span class="fl">0.7</span>
-  masterGain<span class="kw">.</span>connect audioContext<span class="kw">.</span>destination
-  window<span class="kw">.</span>scissor <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Scissor</span><span class="kw">(</span>audioContext<span class="kw">)</span>
-  scissor<span class="kw">.</span>connect masterGain
-
-  keyboard <span class="kw">=</span> <span class="kw">new</span> <span class="dt">VirtualKeyboard</span> $<span class="kw">(</span><span class="st">&quot;#keyboard&quot;</span><span class="kw">),</span>
-    noteOn<span class="kw">:</span> <span class="fu">(note) -&gt;</span>
-      scissor<span class="kw">.</span>noteOn note
-    noteOff<span class="kw">:</span> <span class="fu">(note) -&gt;</span>
-      scissor<span class="kw">.</span>noteOff note
-
-  setNumSaws <span class="kw">=</span> <span class="fu">(numSaws) -&gt;</span>
-    scissor<span class="kw">.</span>numSaws <span class="kw">=</span> numSaws
-
-  setDetune <span class="kw">=</span> <span class="fu">(detune) -&gt;</span>
-    scissor<span class="kw">.</span>detune <span class="kw">=</span> detune
-
-  sawsKnob <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>$<span class="kw">(</span><span class="st">&quot;#saws&quot;</span><span class="kw">)[</span><span class="dv">0</span><span class="kw">],</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span>
-  sawsKnob<span class="kw">.</span>changed <span class="kw">=</span> <span class="fu">-&gt;</span>
-    Knob<span class="kw">.</span>prototype<span class="kw">.</span>changed<span class="kw">.</span>apply <span class="dt">this</span><span class="kw">,</span> arguments
-    setNumSaws <span class="dt">@value</span>
-  $<span class="kw">(</span><span class="st">&quot;#saws&quot;</span><span class="kw">).</span>val scissor<span class="kw">.</span>numSaws
-  sawsKnob<span class="kw">.</span>changed <span class="dv">0</span>
-
-  detuneKnob <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>$<span class="kw">(</span><span class="st">&quot;#detune&quot;</span><span class="kw">)[</span><span class="dv">0</span><span class="kw">],</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span>
-  detuneKnob<span class="kw">.</span>changed <span class="kw">=</span> <span class="fu">-&gt;</span>
-    Knob<span class="kw">.</span>prototype<span class="kw">.</span>changed<span class="kw">.</span>apply <span class="dt">this</span><span class="kw">,</span> arguments
-    setDetune <span class="dt">@value</span>
-  $<span class="kw">(</span><span class="st">&quot;#detune&quot;</span><span class="kw">).</span>val scissor<span class="kw">.</span>detune
-  detuneKnob<span class="kw">.</span>changed <span class="dv">0</span></code></pre>
-<h2 id="conclusion">Conclusion</h2>
-<p>Even though the synth has only two knobs, it can produce some interesting sounds. With 3-5 oscillators, and detune at 9 o’clock, you get the classic 90s trance lead. With 20 oscillators, and detune just above the minimum, you get something that starts off as a nice pluck sound, but evolves into something else entirely when held for a while.</p>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>With that said, we’ve come <a href="http://www.u-he.com/cms/diva">pretty far</a>.<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Since there are 12 notes in an octave, this means that if you have a note, say, C4, and transpose it one octave to C5, you’ll have doubled its frequency. For instance, A4 is 440 Hz, A5 is 880 Hz, A6 is 1760 Hz, and so on.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>Granted, flexbox doesn’t work in older browsers—but hey, neither does the Web Audio API.<a href="#fnref3">↩</a></p></li>
-</ol>
-</div>]]></summary>
-</entry>
-<entry>
     <title>Custom Audio Effects in JavaScript with the Web Audio API</title>
     <link href="http://noisehack.com/custom-audio-effects-javascript-web-audio-api/" />
     <id>http://noisehack.com/custom-audio-effects-javascript-web-audio-api/</id>
@@ -391,13 +17,13 @@ body <span class="kw">{</span>
     <updated>2013-08-07T00:00:00Z</updated>
     <summary type="html"><![CDATA[<p>You can get pretty far with the built-in Web Audio API nodes, but to really turn things up to 11, you may need to write custom audio effects in JavaScript. This post shows you how.</p>
 <!--more-->
-
 <p>To demonstrate the effects, we’ll be using the following reference tone throughout the post:</p>
 <pre style="display: none">var effect = audioContext.createGainNode();</pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Reference Tone
-</button></p>
-
+</button>
+</p>
 <h2 id="simple-lowpass-filter">Simple Lowpass Filter</h2>
 <p>Let’s get warmed up with a <a href="http://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter">simple lowpass filter</a>. This filter simply averages the current input sample with the previous output sample:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
@@ -414,10 +40,11 @@ Reference Tone
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Simple Lowpass
-</button></p>
-
+</button>
+</p>
 <p>I don’t know about you, but I could barely tell a difference between that and the reference tone. But take a look at how the effect is coded – this will serve as the basic template for all of the upcoming audio effects.</p>
 <p>The first thing to note is the buffer size. Set it too low, and you’ll get audio glitches known as <a href="http://en.wikipedia.org/wiki/Buffer_underrun">buffer underruns</a>. Set it too high, and you’ll introduce latency. Set it to 0, and the Web Audio API will pick a value for you.</p>
 <p>Now for the actual filter definition. I’ve wrapped it all in a closure to encapsulate the filter’s internal state (in this case, the previous output sample, <code>lastOut</code>). The <code>AudioNode</code> that actually performs the computation is the <code>ScriptProcessor</code>. To create a <code>ScriptProcessor</code>, use <code>audioContext.createScriptProcessor()</code>:</p>
@@ -453,10 +80,11 @@ Simple Lowpass
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Pinking Filter
-</button></p>
-
+</button>
+</p>
 <p>Qualitatively speaking, the filter smooths out the reference tone and makes it less “harsh” – kind of like the relationship between pink noise and white noise.</p>
 <p>If you look closely, this filter is using the same basic technique as the simple lowpass filter (averaging the last output sample with the current input sample). The only difference is that now there’s six simple lowpass filters, where previously there was only one. In other words, filter <code>b0</code> averages its last output sample (the previous value of <code>b0</code>) with the current input sample, <code>b1</code> averages its last output sample (the previous value of <code>b1</code>) with the current input sample, and so on. These six filters are then combined together with the appropriate weights to approximate a -3dB/octave filter, in aggregate.</p>
 <h2 id="noise-convolver">Noise Convolver</h2>
@@ -473,10 +101,11 @@ Pinking Filter
     <span class="ot">convolver</span>.<span class="fu">buffer</span> = noiseBuffer;
     <span class="kw">return</span> convolver;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Noise Convolver
-</button></p>
-
+</button>
+</p>
 <p>So what we’ve done here is create 0.5 seconds of stereophonic white noise and a <code>ConvolverNode</code> that uses it. You can create some really interesting effects with this technique: create a sound buffer with JavaScript, then use it to convolve an arbitrary input signal.</p>
 <p>If you don’t know much about convolution, that’s OK. I’ll be covering the <code>ConvolverNode</code> in depth in a future post. For now, I’ll just say that you can use it to emulate anything from the reverb of a massive cathedral hall to the tone of a <a href="http://www.amazon.com/dp/B002PYRHFU/?tag=zacden-20">Vox AC30</a>.</p>
 <h2 id="moog-filter">Moog Filter</h2>
@@ -509,10 +138,11 @@ Noise Convolver
     }
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Moog Filter
-</button></p>
-
+</button>
+</p>
 <p>Notice the resonance. The caveat with this approach is that you can’t modulate <code>cutoff</code> and <code>frequency</code> the way you can with a normal <code>AudioParam</code>. I thought I could get around this by creating a dummy <code>BiquadFilter</code> and hijacking its <code>frequency</code> and <code>Q</code> parameters. Unfortunately, the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#computedValue-AudioParam-section"><code>computedValue</code> attribute referenced in the docs</a> doesn’t appear to be publicly accessible. If anyone knows a way around this, I’d be very interested to hear about it.</p>
 <h2 id="bitcrusher">Bitcrusher</h2>
 <p>Let’s take a look at one last effect: the lo-fi bitcrusher (<a href="http://www.musicdsp.org/showArchiveComment.php?ArchiveID=139">based on this code</a>):</p>
@@ -538,10 +168,11 @@ Moog Filter
     };
     <span class="kw">return</span> node;
 })();</code></pre>
-<p><button class="demo">
+<p>
+<button class="demo">
 Bitcrusher
-</button></p>
-
+</button>
+</p>
 <p>It works by quantizing the input signal. In other words, it samples the input signal every so often, then “holds” that sample until it’s time to sample again (based on the <code>bits</code> and <code>normfreq</code> settings).</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>Hopefully this will get you started implementing some crazy audio effects. There’s a whole <a href="http://musicdsp.org/">wild world of DSP algorithms</a> out there, just waiting to be implemented in JavaScript.</p>
@@ -549,7 +180,7 @@ Bitcrusher
 <p>As I was researching for this article, I noticed there’s not really any good central repository for DSP effects. With the Web Audio API, a <a href="http://glsl.heroku.com/">GLSL sandbox</a> for audio effects is suddenly possible. I think a central repository for open-source audio effects with in-browser previews would be really cool. If anyone is interested in building such a platform, <script type="text/javascript">
 <!--
 h='&#110;&#x6f;&#x69;&#x73;&#x65;&#104;&#x61;&#x63;&#x6b;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#122;&#x61;&#x63;&#104;';e=n+a+h;
-document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'">'+'let me know'+'<\/'+'a'+'>');
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+'let me know'+'<\/'+'a'+'>');
 // -->
 </script><noscript>&#108;&#x65;&#116;&#32;&#x6d;&#x65;&#32;&#x6b;&#110;&#x6f;&#x77;&#32;&#40;&#122;&#x61;&#x63;&#104;&#32;&#x61;&#116;&#32;&#110;&#x6f;&#x69;&#x73;&#x65;&#104;&#x61;&#x63;&#x6b;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;&#x29;</noscript>.</p>
 <script>
@@ -600,12 +231,7 @@ $(function() {
         });
     });
 });
-</script>
-
-
-
-
-]]></summary>
+</script>]]></summary>
 </entry>
 <entry>
     <title>How to Build a Monotron Synth with the Web Audio API</title>
@@ -619,7 +245,6 @@ $(function() {
 <p>The <a href="http://www.amazon.com/dp/B003DX96TW/?tag=zacden-20">Monotron</a> is an awesome little analog synth by Korg. In this post, you’ll learn how to recreate the Monotron with the Web Audio API.</p>
 <p>This is a long post, so to get an idea of what you’re building, check out <a href="http://noisehack.com/monotron/">the demo</a> and <a href="https://github.com/zacharydenton/monotron">the code on GitHub</a>.</p>
 <!--more-->
-
 <h2 id="overview">Overview</h2>
 <div class="figure">
 <img src="https://lh6.googleusercontent.com/-XqwhLdsOnu8/Uf2tCqvJQtI/AAAAAAAAxuU/X_IIwkkIviA/s0/monotron_Block_diagram+%25281%2529.jpg" alt="Monotron block diagram" /><p class="caption">Monotron block diagram</p>
@@ -662,7 +287,7 @@ $(function() {
 <p>So the first thing the <code>Monotron</code> constructor does is create the required audio nodes. As mentioned previously, we have the VCO, LFO, and VCF – but we also have two GainNodes: <code>@lfoGain</code> and <code>@output</code>. <code>@lfoGain</code> controls how much of an effect the LFO has on the overall sound – it corresponds to the Monotron’s LFO intensity knob. <code>@output</code> is just a pattern I use when making Web Audio API instruments: it’s always the final node in the instrument’s audio circuit, which gives these instruments a consistent interface.</p>
 <p>The second thing the constructor does is connect the audio nodes together to form the audio circuit. This corresponds to the Monotron block diagram above. The VCO is connected to the VCF, which is then connected to the <code>@output</code> node. Then the LFO is connected to the LFO amplifier (<code>@lfoGain</code>), which (by default) is connected to the VCF’s cutoff frequency. In addition to modulating the VCF, The Monotron also supports modulating the VCO, which we’ll implement later.</p>
 <p>Finally, the constructor sets up some default parameters. The first thing we want to do is silence the <code>@output</code> node. If we didn’t, the Monotron would start making noise as soon as it’s connected. Second, we specify that the VCO and LFO should produce sawtooth waves, just like on the real Monotron. Finally, we start the VCO and LFO. This is something that confused me when I first started programming synths: oscillators actually remain “on” even when no note is being played. Thus we need a way to shape the sound into separate notes.</p>
-<p>In the <code>noteOn</code> method, the first thing is to schedule a change in VCO pitch<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. Notice that <code>time</code> is an optional parameter: if not specified, the pitch changes immediately. This way, the Monotron can also be used with a sequencer which schedules notes ahead of time. Next, we ramp the <code>@output</code> to full volume over a 0.1 second interval. (This helps minimize “clicks” when notes are played.) The <code>noteOff</code> method does the same, in reverse.</p>
+<p>In the <code>noteOn</code> method, the first thing is to schedule a change in VCO pitch<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Notice that <code>time</code> is an optional parameter: if not specified, the pitch changes immediately. This way, the Monotron can also be used with a sequencer which schedules notes ahead of time. Next, we ramp the <code>@output</code> to full volume over a 0.1 second interval. (This helps minimize “clicks” when notes are played.) The <code>noteOff</code> method does the same, in reverse.</p>
 <p>Lastly, we have the <code>connect</code> method. Like <code>@output</code>, this is a pattern I use with all Web Audio synths, and is used in the same way as the <code>connect</code> method of any <code>AudioNode</code>. For instance, to hook the Monotron up to your speakers, you would use:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> audioContext = <span class="kw">new</span> <span class="fu">webkitAudioContext</span>();
 <span class="kw">var</span> monotron = <span class="kw">new</span> <span class="fu">Monotron</span>(audioContext);
@@ -741,7 +366,7 @@ $(function() {
   <span class="kw">color:</span> <span class="dt">#eaeeef</span><span class="kw">;</span>
   <span class="kw">width:</span> <span class="dt">40rem</span><span class="kw">;</span>
 <span class="kw">}</span></code></pre>
-<p>So we don’t use exactly <code>#000</code> and <code>#fff</code> for the colors. I used <a href="http://www.veign.com/application.php?appid=107">Pixeur</a> on the Monotron photo above to pick the right colors. The other thing you’ll notice about this CSS is the units. Lately I’ve been using rems (root ems) instead of px when designing. rems are resolution-independent units which means this design will scale perfectly on any screen, regardless of DPI. You’ll also notice that I’ve specified the measurements as powers of <em>phi</em> (the golden ratio)<sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>. I’m not sure if this actually makes things look better, but it’s a lot easier than having to worry about individual pixels when laying things out.</p>
+<p>So we don’t use exactly <code>#000</code> and <code>#fff</code> for the colors. I used <a href="http://www.veign.com/application.php?appid=107">Pixeur</a> on the Monotron photo above to pick the right colors. The other thing you’ll notice about this CSS is the units. Lately I’ve been using rems (root ems) instead of px when designing. rems are resolution-independent units which means this design will scale perfectly on any screen, regardless of DPI. You’ll also notice that I’ve specified the measurements as powers of <em>phi</em> (the golden ratio)<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>. I’m not sure if this actually makes things look better, but it’s a lot easier than having to worry about individual pixels when laying things out.</p>
 <p>Next, let’s style the <code>#brand</code> div. I’m using the <a href="http://www.google.com/fonts/specimen/Audiowide">Audiowide</a> font for the Monotron logo.</p>
 <pre class="sourceCode css"><code class="sourceCode css">h1, h2, h3 <span class="kw">{</span>
   <span class="kw">font-family:</span> <span class="st">&quot;Audiowide&quot;</span>, Arial, <span class="dt">sans-serif</span><span class="kw">;</span>
@@ -853,7 +478,7 @@ $(function() {
   $<span class="kw">(</span><span class="st">&#39;.knob input&#39;</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
     knopf <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>knob<span class="kw">,</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span></code></pre>
 <h2 id="the-ribbon-keyboard">The Ribbon Keyboard</h2>
-<p>At this point, we’ve got the audio circuit and the control panel. The remaining component is the ribbon keyboard. Looking at the Monotron’s keyboard, my first instinct was to use canvas. However, canvas is not the right approach here, because it’s not scalable<sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. I just used (dynamically-generated) HTML and CSS for the keyboard interface:</p>
+<p>At this point, we’ve got the audio circuit and the control panel. The remaining component is the ribbon keyboard. Looking at the Monotron’s keyboard, my first instinct was to use canvas. However, canvas is not the right approach here, because it’s not scalable<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. I just used (dynamically-generated) HTML and CSS for the keyboard interface:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">noteToFrequency <span class="kw">=</span> <span class="fu">(note) -&gt;</span>
   <span class="ot">Math</span><span class="kw">.</span>pow<span class="kw">(</span><span class="dv">2</span><span class="kw">,</span> <span class="kw">(</span>note <span class="kw">-</span> <span class="dv">69</span><span class="kw">)</span> <span class="kw">/</span> <span class="dv">12</span><span class="kw">)</span> <span class="kw">*</span> <span class="fl">440.0</span>
 
@@ -1029,11 +654,10 @@ $(function() {
     <updated>2013-08-01T00:00:00Z</updated>
     <summary type="html"><![CDATA[<p>One of the main shortcomings of the <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> is that there’s no native support for generating noise. This post will teach you how to overcome that limitation.</p>
 <!--more-->
-
 <p>If you want to skip to the good part, check out <a href="#demo">the demo</a>. Also, I’ve packaged all the noise generators into a small library called <a href="https://github.com/zacharydenton/noise.js">noise.js (available on GitHub)</a>.</p>
 <h2 id="white-noise">White Noise</h2>
 <p>The most common type of noise is <em>white noise</em>. White noise is perfectly random audio data with a flat frequency spectrum.</p>
-<p>To produce white noise, we simply compute a series of random samples<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
+<p>To produce white noise, we simply compute a series of random samples<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. One way to do this with the Web Audio API is to use a <code>ScriptProcessorNode</code>:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> bufferSize = <span class="dv">4096</span>;
 <span class="kw">var</span> whiteNoise = <span class="ot">audioContext</span>.<span class="fu">createScriptProcessor</span>(bufferSize, <span class="dv">1</span>, <span class="dv">1</span>);
 <span class="ot">whiteNoise</span>.<span class="fu">onaudioprocess</span> = <span class="kw">function</span>(e) {
@@ -1160,7 +784,6 @@ $("#pink-demo").click(toggleDemo("Pink Noise", pinkGain));
 $("#brown-demo").click(toggleDemo("Brown Noise", brownGain));
 </script>
 </p>
-
 <p>Just click on the buttons to turn the noise on and off.</p>
 <div class="footnotes">
 <hr />

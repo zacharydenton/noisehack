@@ -6,14 +6,14 @@
 		<meta name="description" content="Recreate the Korg Monotron synthesizer with JavaScript and the Web Audio API.">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="canonical" href="http://noisehack.com/how-to-build-monotron-synth-web-audio-api/">
-		<link href="http://fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+		<link href="//fonts.googleapis.com/css?family=Iceberg|Source+Sans+Pro:400,700,400italic,700italic" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="../css/main.css">
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 		<script src="../js/main.js"></script>
 	</head>
 	<body>
 		<header role="banner">
-			<h1><a href="http://noisehack.com/">Noisehack</a></h1>
+			<h1><a href="../">Noisehack</a></h1>
 			<nav>
 			<ul>
 				<li><a href="../about/">About</a></li>
@@ -33,7 +33,6 @@
 <p>The <a href="http://www.amazon.com/dp/B003DX96TW/?tag=zacden-20">Monotron</a> is an awesome little analog synth by Korg. In this post, you’ll learn how to recreate the Monotron with the Web Audio API.</p>
 <p>This is a long post, so to get an idea of what you’re building, check out <a href="http://noisehack.com/monotron/">the demo</a> and <a href="https://github.com/zacharydenton/monotron">the code on GitHub</a>.</p>
 <!--more-->
-
 <h2 id="overview">Overview</h2>
 <div class="figure">
 <img src="https://lh6.googleusercontent.com/-XqwhLdsOnu8/Uf2tCqvJQtI/AAAAAAAAxuU/X_IIwkkIviA/s0/monotron_Block_diagram+%25281%2529.jpg" alt="Monotron block diagram" /><p class="caption">Monotron block diagram</p>
@@ -76,7 +75,7 @@
 <p>So the first thing the <code>Monotron</code> constructor does is create the required audio nodes. As mentioned previously, we have the VCO, LFO, and VCF – but we also have two GainNodes: <code>@lfoGain</code> and <code>@output</code>. <code>@lfoGain</code> controls how much of an effect the LFO has on the overall sound – it corresponds to the Monotron’s LFO intensity knob. <code>@output</code> is just a pattern I use when making Web Audio API instruments: it’s always the final node in the instrument’s audio circuit, which gives these instruments a consistent interface.</p>
 <p>The second thing the constructor does is connect the audio nodes together to form the audio circuit. This corresponds to the Monotron block diagram above. The VCO is connected to the VCF, which is then connected to the <code>@output</code> node. Then the LFO is connected to the LFO amplifier (<code>@lfoGain</code>), which (by default) is connected to the VCF’s cutoff frequency. In addition to modulating the VCF, The Monotron also supports modulating the VCO, which we’ll implement later.</p>
 <p>Finally, the constructor sets up some default parameters. The first thing we want to do is silence the <code>@output</code> node. If we didn’t, the Monotron would start making noise as soon as it’s connected. Second, we specify that the VCO and LFO should produce sawtooth waves, just like on the real Monotron. Finally, we start the VCO and LFO. This is something that confused me when I first started programming synths: oscillators actually remain “on” even when no note is being played. Thus we need a way to shape the sound into separate notes.</p>
-<p>In the <code>noteOn</code> method, the first thing is to schedule a change in VCO pitch<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. Notice that <code>time</code> is an optional parameter: if not specified, the pitch changes immediately. This way, the Monotron can also be used with a sequencer which schedules notes ahead of time. Next, we ramp the <code>@output</code> to full volume over a 0.1 second interval. (This helps minimize “clicks” when notes are played.) The <code>noteOff</code> method does the same, in reverse.</p>
+<p>In the <code>noteOn</code> method, the first thing is to schedule a change in VCO pitch<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Notice that <code>time</code> is an optional parameter: if not specified, the pitch changes immediately. This way, the Monotron can also be used with a sequencer which schedules notes ahead of time. Next, we ramp the <code>@output</code> to full volume over a 0.1 second interval. (This helps minimize “clicks” when notes are played.) The <code>noteOff</code> method does the same, in reverse.</p>
 <p>Lastly, we have the <code>connect</code> method. Like <code>@output</code>, this is a pattern I use with all Web Audio synths, and is used in the same way as the <code>connect</code> method of any <code>AudioNode</code>. For instance, to hook the Monotron up to your speakers, you would use:</p>
 <pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> audioContext = <span class="kw">new</span> <span class="fu">webkitAudioContext</span>();
 <span class="kw">var</span> monotron = <span class="kw">new</span> <span class="fu">Monotron</span>(audioContext);
@@ -155,7 +154,7 @@
   <span class="kw">color:</span> <span class="dt">#eaeeef</span><span class="kw">;</span>
   <span class="kw">width:</span> <span class="dt">40rem</span><span class="kw">;</span>
 <span class="kw">}</span></code></pre>
-<p>So we don’t use exactly <code>#000</code> and <code>#fff</code> for the colors. I used <a href="http://www.veign.com/application.php?appid=107">Pixeur</a> on the Monotron photo above to pick the right colors. The other thing you’ll notice about this CSS is the units. Lately I’ve been using rems (root ems) instead of px when designing. rems are resolution-independent units which means this design will scale perfectly on any screen, regardless of DPI. You’ll also notice that I’ve specified the measurements as powers of <em>phi</em> (the golden ratio)<sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>. I’m not sure if this actually makes things look better, but it’s a lot easier than having to worry about individual pixels when laying things out.</p>
+<p>So we don’t use exactly <code>#000</code> and <code>#fff</code> for the colors. I used <a href="http://www.veign.com/application.php?appid=107">Pixeur</a> on the Monotron photo above to pick the right colors. The other thing you’ll notice about this CSS is the units. Lately I’ve been using rems (root ems) instead of px when designing. rems are resolution-independent units which means this design will scale perfectly on any screen, regardless of DPI. You’ll also notice that I’ve specified the measurements as powers of <em>phi</em> (the golden ratio)<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>. I’m not sure if this actually makes things look better, but it’s a lot easier than having to worry about individual pixels when laying things out.</p>
 <p>Next, let’s style the <code>#brand</code> div. I’m using the <a href="http://www.google.com/fonts/specimen/Audiowide">Audiowide</a> font for the Monotron logo.</p>
 <pre class="sourceCode css"><code class="sourceCode css">h1, h2, h3 <span class="kw">{</span>
   <span class="kw">font-family:</span> <span class="st">&quot;Audiowide&quot;</span>, Arial, <span class="dt">sans-serif</span><span class="kw">;</span>
@@ -267,7 +266,7 @@
   $<span class="kw">(</span><span class="st">'.knob input'</span><span class="kw">).</span>each <span class="fu">(i, knob) -&gt;</span>
     knopf <span class="kw">=</span> <span class="kw">new</span> <span class="dt">Knob</span><span class="kw">(</span>knob<span class="kw">,</span> <span class="kw">new</span> <span class="dt">Ui.P2</span><span class="kw">())</span></code></pre>
 <h2 id="the-ribbon-keyboard">The Ribbon Keyboard</h2>
-<p>At this point, we’ve got the audio circuit and the control panel. The remaining component is the ribbon keyboard. Looking at the Monotron’s keyboard, my first instinct was to use canvas. However, canvas is not the right approach here, because it’s not scalable<sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. I just used (dynamically-generated) HTML and CSS for the keyboard interface:</p>
+<p>At this point, we’ve got the audio circuit and the control panel. The remaining component is the ribbon keyboard. Looking at the Monotron’s keyboard, my first instinct was to use canvas. However, canvas is not the right approach here, because it’s not scalable<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. I just used (dynamically-generated) HTML and CSS for the keyboard interface:</p>
 <pre class="sourceCode coffee"><code class="sourceCode coffee">noteToFrequency <span class="kw">=</span> <span class="fu">(note) -&gt;</span>
   <span class="ot">Math</span><span class="kw">.</span>pow<span class="kw">(</span><span class="dv">2</span><span class="kw">,</span> <span class="kw">(</span>note <span class="kw">-</span> <span class="dv">69</span><span class="kw">)</span> <span class="kw">/</span> <span class="dv">12</span><span class="kw">)</span> <span class="kw">*</span> <span class="fl">440.0</span>
 
@@ -435,7 +434,7 @@
 </ol>
 </div>
   <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
   </p>
   <hr />
   <div id="disqus_thread"></div>
@@ -454,18 +453,18 @@
 		<aside id="sidebar">
 <h2>Subscribe</h2>
 <ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
   <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
   <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
 </ul>
 <h2>Recent</h2>
 <ul class="recent">
   
-  <li><a href="../how-to-build-supersaw-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Supersaw Synthesizer with the Web Audio API</a></li>
-  
   <li><a href="../custom-audio-effects-javascript-web-audio-api/"><i class="icon-asterisk"></i> Custom Audio Effects in JavaScript with the Web Audio API</a></li>
   
   <li><a href="../how-to-build-monotron-synth-web-audio-api/"><i class="icon-asterisk"></i> How to Build a Monotron Synth with the Web Audio API</a></li>
+  
+  <li><a href="../generate-noise-web-audio-api/"><i class="icon-asterisk"></i> How to Generate Noise with the Web Audio API</a></li>
   
 </ul>
 </aside>
