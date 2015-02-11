@@ -33,6 +33,7 @@
 <p>If you’ve ever built a virtual synth before, you know that trying to reproduce the analog sound is really hard<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. It’s better to compete where digital has a comparative advantage, like spawning hundreds of oscillators dynamically. That’s the essence of the supersaw synth: stack a bunch of sawtooth oscillators on top of each other, each at a slightly different frequency.</p>
 <p>Here’s <a href="../scissor/">the demo</a> and <a href="https://github.com/zacharydenton/scissor">the code</a>. There are only two knobs: one to control the number of oscillators; the other to control how out-of-tune each oscillator is. It’s simple, but it can make some cool sounds. Read on if you want to learn how to build your own.</p>
 <!--more-->
+
 <h2 id="overview">Overview</h2>
 <p>The supersaw sound first appeared in 1996 with the <a href="http://en.wikipedia.org/wiki/Roland_JP-8000#The_Supersaw">Roland JP-8000 synth</a>. The JP-8000’s supersaw waveform is comprised of 7 detuned saw waves. Later the <a href="http://en.wikipedia.org/wiki/Access_Virus">Access Virus TI</a> came out with the hypersaw: 9 detuned sawtooth oscillators. The synth we’re building today can do hundreds of detuned oscillators.</p>
 <p>We’ll build this synth in three stages. The first thing we’ll build is what I like to call the “audio circuit”: that is, the code that actually makes noise. Second, we’ll add a keyboard so we can play some notes, and finally, we’ll add a UI to make it look good (and a couple of knobs to tweak the sound).</p>
@@ -146,7 +147,7 @@
 <span class="dv">@import</span> <span class="st">&quot;preboot.less&quot;</span><span class="dv">;</span>
 <span class="dv">@import</span> <span class="st">&quot;flexbox.less&quot;</span><span class="dv">;</span>
 
-@synth-color<span class="dv">:</span> #737373;
+@synth-color<span class="dv">:</span> <span class="fl">#737373</span>;
 @header-color<span class="dv">:</span> <span class="fl">#c30909</span>;</code></pre>
 <p>I decided to make the page background a radial gradient. Feel free to change this if you’d prefer something more subtle.</p>
 <pre class="sourceCode css"><code class="sourceCode css">html <span class="kw">{</span>
@@ -394,7 +395,7 @@ body <span class="kw">{</span>
 </ol>
 </div>
   <hr />
-  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
+  <p>If you enjoyed this post, subscribe to the <a target="_blank" href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US">Noisehack newsletter</a> or <a href="https://twitter.com/noisehack">follow us on Twitter</a>.
   </p>
   <hr />
   <div id="disqus_thread"></div>
@@ -413,7 +414,7 @@ body <span class="kw">{</span>
 		<aside id="sidebar">
 <h2>Subscribe</h2>
 <ul>
-  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
+  <li><a href="http://feedburner.google.com/fb/a/mailverify?uri=noisehack&amp;loc=en_US"><i class="icon-envelope"></i> Newsletter</a></li>
   <li><a href="https://twitter.com/noisehack"><i class="icon-twitter"></i> Twitter</a></li>
   <li><a href="http://feeds.feedburner.com/noisehack"><i class="icon-rss"></i> RSS</a></li>
 </ul>
