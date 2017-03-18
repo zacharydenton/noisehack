@@ -164,22 +164,22 @@ Brown Noise
 </button>
 <script type="text/javascript" src="/js/noise.js"></script>
 <script type="text/javascript">
-var audioContext = new webkitAudioContext();
+var audioContext = new (window.webkitAudioContext || window.AudioContext)();
 
 var whiteNoise = audioContext.createWhiteNoise();
-var whiteGain = audioContext.createGainNode();
+var whiteGain = audioContext.createGain();
 whiteGain.gain.value = 0;
 whiteNoise.connect(whiteGain);
 whiteGain.connect(audioContext.destination);
 
 var pinkNoise = audioContext.createPinkNoise();
-var pinkGain = audioContext.createGainNode();
+var pinkGain = audioContext.createGain();
 pinkGain.gain.value = 0;
 pinkNoise.connect(pinkGain);
 pinkGain.connect(audioContext.destination);
 
 var brownNoise = audioContext.createBrownNoise();
-var brownGain = audioContext.createGainNode();
+var brownGain = audioContext.createGain();
 brownGain.gain.value = 0;
 brownNoise.connect(brownGain);
 brownGain.connect(audioContext.destination);

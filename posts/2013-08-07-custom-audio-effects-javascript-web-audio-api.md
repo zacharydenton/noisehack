@@ -12,7 +12,7 @@ in JavaScript. This post shows you how.
 To demonstrate the effects, we'll be using the following reference tone
 throughout the post:
 
-<pre style="display: none">var effect = audioContext.createGainNode();</pre>
+<pre style="display: none">var effect = audioContext.createGain();</pre>
 <p><button class="demo">
 Reference Tone
 </button></p>
@@ -298,9 +298,9 @@ $(function() {
     var startDemo = function($button) {
         var now = audioContext.currentTime;
 
-        var effect = eval($button.parent().prev('pre').text() + "effect;");
+        var effect = eval($button.parent().prev().text() + "effect;");
         var sawWave = audioContext.createOscillator();
-        sawWave.type = sawWave.SAWTOOTH;
+        sawWave.type = "sawtooth";
         sawWave.start(now);
         var effectGain = audioContext.createGain();
 
