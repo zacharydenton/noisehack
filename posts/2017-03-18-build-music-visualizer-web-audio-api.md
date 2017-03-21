@@ -3,7 +3,7 @@ title: Build a Music Visualizer with the Web Audio API
 excerpt: Basics of music visualization using the Web Audio API.
 ---
 
-If you've ever wondered how music visualizers like Milkdrop are made, this post is for you. We'll start with simple visualizations using the Canvas API and move on to more sophisticated visualizations with WebGL shaders.
+If you've ever wondered how music visualizers like [MilkDrop](https://en.wikipedia.org/wiki/MilkDrop) are made, this post is for you. We'll start with simple visualizations using the Canvas API and move on to more sophisticated visualizations with WebGL shaders.
 
 <!--more-->
 
@@ -13,7 +13,7 @@ The first thing you need to make an audio visualizer is some audio. Today we hav
 
 <p><button class="play-btn">Saw Sweep</button><button class="song-btn">Play Song</button></p>
 
-The second thing all audio visualizers need is a way to access the audio data. The Web Audio API provides the AnalyserNode for this purpose. In addition to providing the raw waveform (aka time domain) data, it provides methods for accessing the audio spectrum (aka frequency domain) data. Using the AnalyserNode is simple: create a `TypedArray` of length `AnalyserNode.frequencyBinCount` and then call the method `AnalyserNode.getFloatTimeDomainData` to populate the array with the current waveform data.
+The second thing all audio visualizers need is a way to access the audio data. The Web Audio API provides the `AnalyserNode` for this purpose. In addition to providing the raw waveform (aka time domain) data, it provides methods for accessing the audio spectrum (aka frequency domain) data. Using the `AnalyserNode` is simple: create a `TypedArray` of length `AnalyserNode.frequencyBinCount` and then call the method `AnalyserNode.getFloatTimeDomainData` to populate the array with the current waveform data.
 
 ~~~~ {.javascript}
 const analyser = audioContext.createAnalyser()
@@ -105,7 +105,7 @@ I've found the spectrogram to be one of the most useful tools for analyzing audi
 
 ## Visualizations with WebGL Shaders
 
-My favorite computer graphics technique is [fullscreen pixel shaders](https://en.wikipedia.org/wiki/Shader) with WebGL. Normally several pixel shaders are used in combination with 3D geometry to render a scene, but today we're going to skip the geometry and render the entire scene using a single pixel (aka fragment) shader. There's a bit more boilerplate compared to the Canvas API, but the end result is well worth it.
+My favorite computer graphics technique is [fullscreen pixel shaders](https://en.wikipedia.org/wiki/Shader) with WebGL. Normally several pixel shaders are used in combination with 3D geometry to render a scene, but today we're going to skip the geometry and render the entire scene using a single pixel shader (aka fragment shader). There's a bit more boilerplate compared to the Canvas API, but the end result is well worth it.
 
 To start, we need to draw a rectangle (aka quad) covering the entire screen. This is the surface upon which the fragment shader will be drawn.
 
@@ -212,7 +212,7 @@ function copyAudioDataToTexture(gl, audioData, textureArray) {
 }
 ~~~~
 
-With all of that out of the way, we're finally ready to draw the visualization. First, we initialize the canvas and compile the shader.
+With all that out of the way, we're finally ready to draw the visualization. First, we initialize the canvas and compile the shader.
 
 ~~~~ {.javascript}
 const fragCanvas = document.getElementById('fragment')
@@ -254,6 +254,6 @@ initQuad(gl)
 <p><canvas id="fragment"></canvas></p>
 <p><button class="play-btn">Saw Sweep</button><button class="song-btn">Play Song</button></p>
 
-As you can see, fullscreen fragment shaders are quite powerful. For more ideas, spend some time exploring [Shadertoy](https://www.shadertoy.com/). [The Book of Shaders](https://thebookofshaders.com/) is another excellent resource.
+As you can see, fullscreen fragment shaders are quite powerful. For more ideas, spend some time exploring [Shadertoy](https://www.shadertoy.com/) and [The Book of Shaders](https://thebookofshaders.com/). Making a shader react to audio is a great way to breathe more life into it, and as we've seen, the Web Audio API makes it easy to do. If you end up making a cool music visualization, share it in the comments!
 
 <script src="/js/build-music-visualizer-web-audio-api.js"></script>
