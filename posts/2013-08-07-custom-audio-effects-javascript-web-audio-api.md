@@ -341,13 +341,13 @@ $(function() {
   [simple lowpass filter]: http://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
   [buffer underruns]: http://en.wikipedia.org/wiki/Buffer_underrun
   [generate pink noise with the Web Audio API]: /generate-noise-web-audio-api/#pink-noise
-  [Vox AC30]: http://www.amazon.com/dp/B002PYRHFU/?tag=zacden-20
+  [Vox AC30]: http://www.amazon.com/dp/B002PYRHFU/
   [classic Moog filter]: http://en.wikipedia.org/wiki/Minimoog
   [a pretty good approximation]: http://www.musicdsp.org/showArchiveComment.php?ArchiveID=26
   [`computedValue` attribute referenced in the docs]: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#computedValue-AudioParam-section
   [based on this code]: http://www.musicdsp.org/showArchiveComment.php?ArchiveID=139
   [wild world of DSP algorithms]: http://musicdsp.org/
-  [Designing Audio Effect Plug-Ins in C++]: http://www.amazon.com/dp/0240825152/?tag=zacden-20
+  [Designing Audio Effect Plug-Ins in C++]: http://www.amazon.com/dp/0240825152/
   [cutting-edge of virtual analog filter design]: /research/VAFilterDesign_1.0.3.pdf
   [GLSL sandbox]: http://glsl.heroku.com/
   [let me know]: mailto:zach@noisehack.com

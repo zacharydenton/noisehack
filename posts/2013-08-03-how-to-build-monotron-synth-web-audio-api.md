@@ -635,7 +635,7 @@ do this in an upcoming post.
     window is resized, you can make it seem like it is.
 
   [Korg Monotron synthesizer]: https://lh3.googleusercontent.com/-IB3Rw79rchE/Uf2tCgK4LyI/AAAAAAAAxvk/WT5SFo6O8Ug/s0/kor-monotron_3.jpg
-  [Monotron]: http://www.amazon.com/dp/B003DX96TW/?tag=zacden-20
+  [Monotron]: http://www.amazon.com/dp/B003DX96TW/
   [the demo]: http://noisehack.com/monotron/
   [the code on GitHub]: https://github.com/zacharydenton/monotron
   [Monotron block diagram]: https://lh6.googleusercontent.com/-XqwhLdsOnu8/Uf2tCqvJQtI/AAAAAAAAxuU/X_IIwkkIviA/s0/monotron_Block_diagram+%25281%2529.jpg
@@ -649,5 +649,5 @@ do this in an upcoming post.
   [jQuery knob]: http://anthonyterrien.com/knob/
   [Jim Knopf]: https://github.com/eskimoblood/jim-knopf
   [Fake 3D with CSS Borders]: https://lh3.googleusercontent.com/-KZdscuCzv1g/Uf8XeC1r_BI/AAAAAAAAxwA/9Ug5scl7TUI/s0/Capture2.jpg
-  [MS-20]: http://www.amazon.com/dp/B00B5SKWBS/?tag=zacden-20
+  [MS-20]: http://www.amazon.com/dp/B00B5SKWBS/
   [calculate this automatically]: https://github.com/zacharydenton/monotron/blob/master/css/preboot.less#L45
