@@ -27,6 +27,7 @@ $(function main () {
   masterGain = audioContext.createGain()
   masterGain.connect(audioContext.destination)
   const song = new Audio('//zacharydenton.github.io/noisehack/static/zero_centre.mp3')
+  song.crossOrigin = 'anonymous'
   const songSource = audioContext.createMediaElementSource(song)
   let songPlaying = false
   songSource.connect(masterGain)
